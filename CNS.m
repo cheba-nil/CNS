@@ -1,7 +1,7 @@
 function varargout = CNS(varargin)
 %CNS MATLAB code file for CNS.fig
 %      CNS, by itself, creates a new CNS or raises the existing
-%      singleton*.
+%      singleton*. 
 %
 %      H = CNS returns the handle to a new CNS or the handle to
 %      the existing singleton*.
