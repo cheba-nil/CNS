@@ -1,0 +1,251 @@
+#!/bin/bash
+
+
+################################
+##          kNN Step 3        ##
+################################
+## postprocessing and cleanup ##
+################################
+
+WMHextraction_kNNdiscovery_Step3(){
+
+	grep -w Yes ${subj_dir}/${ID}/mri/extractedWMH/temp/${ID}_Prediction_results.dat > ${subj_dir}/${ID}/mri/extractedWMH/temp/${ID}_Predicted_WMHclusters.txt
+	NumOfWMHclusters=`wc -l ${subj_dir}/${ID}/mri/extractedWMH/temp/${ID}_Predicted_WMHclusters.txt | awk -F' ' '{print $1}'`
+	echo "${NumOfWMHclusters} WMH clusters predicted for ${ID}!"
+	echo "Building image containing predicted WMH clusters. This will take some time ..."
+	echo ""
+
+	fslmaths ${subj_dir}/${ID}/mri/extractedWMH/temp/${ID}_seg0 -uthr 0 ${subj_dir}/${ID}/mri/extractedWMH/${ID}_predicted_WMH_clusters  # empty image
+
+	while read cluster
+	do
+		segID=`echo ${cluster} | awk -F' ' '{print $1}'`
+		clusterID=`echo ${cluster} | awk -F' ' '{print $2}'`
+		fslmaths ${subj_dir}/${ID}/mri/extractedWMH/temp/${ID}_seg${segID}.nii \
+			-thr ${clusterID} -uthr ${clusterID} \
+			-bin \
+			-add ${WMH_cluster} ${subj_dir}/${ID}/mri/extractedWMH/${ID}_predicted_WMH_clusters \
+			${subj_dir}/${ID}/mri/extractedWMH/${ID}_predicted_WMH_clusters
+
+	done < ${subj_dir}/${ID}/mri/extractedWMH/temp/${ID}_Predicted_WMHclusters.txt
+
+	echo ""
+	echo "Whole brain WMH image has been established!"
+	
+
+
+	################################################
+	###   distinguish peri-ventricle from deep   ###
+	###   also segment according to lobes        ###
+	################################################
+
+	# build periventricle mask
+	fslmaths ${pipPath}/Templates/M_W4_averaged_probability_maps/CSFoutput_0.5_bin_ero_distanceMap.nii.gz \
+		 -uthr ${PVWMH_magnitude} \
+		 -bin \
+		 -fillh \
+		 ${subj_dir}/${ID}/mri/extractedWMH/temp/periventricle_mask_${PVWMH_magnitude}
+
+
+	# apply periventricle mask to predicted WMH clusters
+	fslmaths ${subj_dir}/${ID}/mri/extractedWMH/${ID}_predicted_WMH_clusters \
+		 -mas ${subj_dir}/${ID}/mri/extractedWMH/temp/periventricle_mask_${PVWMH_magnitude} \
+		 ${subj_dir}/${ID}/mri/extractedWMH/${ID}_predicted_WMH_clusters_PVWMH
+
+	echo "Periventricular WMH has been segmented!"
+
+
+	# the rest is deep WMH
+	fslmaths ${subj_dir}/${ID}/mri/extractedWMH/${ID}_predicted_WMH_clusters \
+		 -sub ${subj_dir}/${ID}/mri/extractedWMH/${ID}_predicted_WMH_clusters_PVWMH \
+		 ${subj_dir}/${ID}/mri/extractedWMH/${ID}_predicted_WMH_clusters_DWMH
+
+	echo "Deep WMH has been segmented!"
+	echo ""
+
+
+	# segment DWMH into lobes
+	fslmaths ${subj_dir}/${ID}/mri/extractedWMH/${ID}_predicted_WMH_clusters_DWMH \
+		 -mas ${pipPath}/Templates/lobar_and_arterial_template/wlobarROI_template_to_use_Lfrontal \
+		 ${subj_dir}/${ID}/mri/extractedWMH/${ID}_predicted_WMH_clusters_DWMH_Lfrontal
+
+	fslmaths ${subj_dir}/${ID}/mri/extractedWMH/${ID}_predicted_WMH_clusters_DWMH \
+		 -mas ${pipPath}/Templates/lobar_and_arterial_template/wlobarROI_template_to_use_Rfrontal \
+		 ${subj_dir}/${ID}/mri/extractedWMH/${ID}_predicted_WMH_clusters_DWMH_Rfrontal
+
+	fslmaths ${subj_dir}/${ID}/mri/extractedWMH/${ID}_predicted_WMH_clusters_DWMH \
+		 -mas ${pipPath}/Templates/lobar_and_arterial_template/wlobarROI_template_to_use_Ltemporal \
+		 ${subj_dir}/${ID}/mri/extractedWMH/${ID}_predicted_WMH_clusters_DWMH_Ltemporal
+	
+	fslmaths ${subj_dir}/${ID}/mri/extractedWMH/${ID}_predicted_WMH_clusters_DWMH \
+		 -mas ${pipPath}/Templates/lobar_and_arterial_template/wlobarROI_template_to_use_Rtemporal \
+		 ${subj_dir}/${ID}/mri/extractedWMH/${ID}_predicted_WMH_clusters_DWMH_Rtemporal
+
+	fslmaths ${subj_dir}/${ID}/mri/extractedWMH/${ID}_predicted_WMH_clusters_DWMH \
+		 -mas ${pipPath}/Templates/lobar_and_arterial_template/wlobarROI_template_to_use_Lparietal \
+		 ${subj_dir}/${ID}/mri/extractedWMH/${ID}_predicted_WMH_clusters_DWMH_Lparietal
+	
+	fslmaths ${subj_dir}/${ID}/mri/extractedWMH/${ID}_predicted_WMH_clusters_DWMH \
+		 -mas ${pipPath}/Templates/lobar_and_arterial_template/wlobarROI_template_to_use_Rparietal \
+		 ${subj_dir}/${ID}/mri/extractedWMH/${ID}_predicted_WMH_clusters_DWMH_Rparietal
+
+	fslmaths ${subj_dir}/${ID}/mri/extractedWMH/${ID}_predicted_WMH_clusters_DWMH \
+		 -mas ${pipPath}/Templates/lobar_and_arterial_template/wlobarROI_template_to_use_Loccipital \
+		 ${subj_dir}/${ID}/mri/extractedWMH/${ID}_predicted_WMH_clusters_DWMH_Loccipital
+	
+	fslmaths ${subj_dir}/${ID}/mri/extractedWMH/${ID}_predicted_WMH_clusters_DWMH \
+		 -mas ${pipPath}/Templates/lobar_and_arterial_template/wlobarROI_template_to_use_Roccipital \
+		 ${subj_dir}/${ID}/mri/extractedWMH/${ID}_predicted_WMH_clusters_DWMH_Roccipital
+
+
+	# cerebellum and brainstem WMH
+	fslmaths ${subj_dir}/${ID}/mri/extractedWMH/${ID}_predicted_WMH_clusters_DWMH \
+		 -mas ${pipPath}/Templates/lobar_and_arterial_template/wlobarROI_template_to_use_Lcerebellum \
+		 ${subj_dir}/${ID}/mri/extractedWMH/${ID}_predicted_WMH_clusters_DWMH_Lcerebellum
+	
+	fslmaths ${subj_dir}/${ID}/mri/extractedWMH/${ID}_predicted_WMH_clusters_DWMH \
+		 -mas ${pipPath}/Templates/lobar_and_arterial_template/wlobarROI_template_to_use_Rcerebellum \
+		 ${subj_dir}/${ID}/mri/extractedWMH/${ID}_predicted_WMH_clusters_DWMH_Rcerebellum
+
+	fslmaths ${subj_dir}/${ID}/mri/extractedWMH/${ID}_predicted_WMH_clusters_DWMH \
+		 -mas ${pipPath}/Templates/lobar_and_arterial_template/wlobarROI_template_to_use_Brainstem \
+		 ${subj_dir}/${ID}/mri/extractedWMH/${ID}_predicted_WMH_clusters_DWMH_Brainstem
+
+	###################################
+	### Write WMH stats to textfile ###
+	###################################
+
+	echo "Writing WMH stats to textfile ..."
+	echo ""
+
+	if [ ! -d "${subj_dir}/${ID}/stats" ]; then
+		mkdir ${subj_dir}/${ID}/stats
+	fi
+
+	if [ -f ${subj_dir}/${ID}/stats/${ID}_WMH_stats.txt ]; then
+		rm -f ${subj_dir}/${ID}/stats/${ID}_WMH_stats.txt
+	fi
+
+	No_WMHclusters=`fslstats ${subj_dir}/${ID}/mri/extractedWMH/${ID}_predicted_WMH_clusters -V | awk '{print $1}'`
+	No_PVWMHclusters=`fslstats ${subj_dir}/${ID}/mri/extractedWMH/${ID}_predicted_WMH_clusters_PVWMH -V | awk '{print $1}'`
+	# No_DWMHclusters=`fslstats ${subj_dir}/${ID}/mri/extractedWMH/${ID}_predicted_WMH_clusters_DWMH -V | awk '{print $1}'` # DWMH does not include cerebellum and brainstem!
+
+	No_Lfrontal_WMHclusters=`fslstats ${subj_dir}/${ID}/mri/extractedWMH/${ID}_predicted_WMH_clusters_DWMH_Lfrontal -V | awk '{print $1}'`
+	No_Rfrontal_WMHclusters=`fslstats ${subj_dir}/${ID}/mri/extractedWMH/${ID}_predicted_WMH_clusters_DWMH_Rfrontal -V | awk '{print $1}'`
+	No_Ltemporal_WMHclusters=`fslstats ${subj_dir}/${ID}/mri/extractedWMH/${ID}_predicted_WMH_clusters_DWMH_Ltemporal -V | awk '{print $1}'`
+	No_Rtemporal_WMHclusters=`fslstats ${subj_dir}/${ID}/mri/extractedWMH/${ID}_predicted_WMH_clusters_DWMH_Rtemporal -V | awk '{print $1}'`
+	No_Lparietal_WMHclusters=`fslstats ${subj_dir}/${ID}/mri/extractedWMH/${ID}_predicted_WMH_clusters_DWMH_Lparietal -V | awk '{print $1}'`
+	No_Rparietal_WMHclusters=`fslstats ${subj_dir}/${ID}/mri/extractedWMH/${ID}_predicted_WMH_clusters_DWMH_Rparietal -V | awk '{print $1}'`
+	No_Loccipital_WMHclusters=`fslstats ${subj_dir}/${ID}/mri/extractedWMH/${ID}_predicted_WMH_clusters_DWMH_Loccipital -V | awk '{print $1}'`
+	No_Roccipital_WMHclusters=`fslstats ${subj_dir}/${ID}/mri/extractedWMH/${ID}_predicted_WMH_clusters_DWMH_Roccipital -V | awk '{print $1}'`
+	No_Lcerebellum_WMHclusters=`fslstats ${subj_dir}/${ID}/mri/extractedWMH/${ID}_predicted_WMH_clusters_DWMH_Lcerebellum -V | awk '{print $1}'`
+	No_Rcerebellum_WMHclusters=`fslstats ${subj_dir}/${ID}/mri/extractedWMH/${ID}_predicted_WMH_clusters_DWMH_Rcerebellum -V | awk '{print $1}'`
+	No_Brainstem_WMHclusters=`fslstats ${subj_dir}/${ID}/mri/extractedWMH/${ID}_predicted_WMH_clusters_DWMH_Brainstem -V | awk '{print $1}'`
+
+	No_DWMHclusters=`bc <<< "${No_Lfrontal_WMHclusters} + \
+				 ${No_Rfrontal_WMHclusters} + \
+				 ${No_Ltemporal_WMHclusters} + \
+				 ${No_Rtemporal_WMHclusters} + \
+				 ${No_Lparietal_WMHclusters} + \
+				 ${No_Rparietal_WMHclusters} + \
+				 ${No_Loccipital_WMHclusters} + \
+				 ${No_Roccipital_WMHclusters}"`
+
+	Vol_WMHclusters=`bc <<< "1.5 * 1.5 * 1.5 * ${No_WMHclusters}"`
+	Vol_PVWMHclusters=`bc <<< "1.5 * 1.5 * 1.5 * ${No_PVWMHclusters}"`
+	Vol_DWMHclusters=`bc <<< "1.5 * 1.5 * 1.5 * ${No_DWMHclusters}"`
+
+	Vol_Lfrontal_DWMHclusters=`bc <<< "1.5 * 1.5 * 1.5 * ${No_Lfrontal_WMHclusters}"`
+	Vol_Rfrontal_DWMHclusters=`bc <<< "1.5 * 1.5 * 1.5 * ${No_Rfrontal_WMHclusters}"`
+	Vol_Ltemporal_DWMHclusters=`bc <<< "1.5 * 1.5 * 1.5 * ${No_Ltemporal_WMHclusters}"`
+	Vol_Rtemporal_DWMHclusters=`bc <<< "1.5 * 1.5 * 1.5 * ${No_Rtemporal_WMHclusters}"`
+	Vol_Lparietal_DWMHclusters=`bc <<< "1.5 * 1.5 * 1.5 * ${No_Lparietal_WMHclusters}"`
+	Vol_Rparietal_DWMHclusters=`bc <<< "1.5 * 1.5 * 1.5 * ${No_Rparietal_WMHclusters}"`
+	Vol_Loccipital_DWMHclusters=`bc <<< "1.5 * 1.5 * 1.5 * ${No_Loccipital_WMHclusters}"`
+	Vol_Roccipital_DWMHclusters=`bc <<< "1.5 * 1.5 * 1.5 * ${No_Roccipital_WMHclusters}"`
+	Vol_Lcerebellum_DWMHclusters=`bc <<< "1.5 * 1.5 * 1.5 * ${No_Lcerebellum_WMHclusters}"`
+	Vol_Rcerebellum_DWMHclusters=`bc <<< "1.5 * 1.5 * 1.5 * ${No_Rcerebellum_WMHclusters}"`
+	Vol_Brainstem_DWMHclusters=`bc <<< "1.5 * 1.5 * 1.5 * ${No_Brainstem_WMHclusters}"`
+
+	echo "" >> ${subj_dir}/${ID}/stats/${ID}_WMH_stats.txt
+	date >> ${subj_dir}/${ID}/stats/${ID}_WMH_stats.txt
+	echo "" >> ${subj_dir}/${ID}/stats/${ID}_WMH_stats.txt
+	echo "WMH Measurements" >> ${subj_dir}/${ID}/stats/${ID}_WMH_stats.txt
+	echo "" >> ${subj_dir}/${ID}/stats/${ID}_WMH_stats.txt
+	echo "" >> ${subj_dir}/${ID}/stats/${ID}_WMH_stats.txt
+	echo "==================== Global measures ===========================" >> ${subj_dir}/${ID}/stats/${ID}_WMH_stats.txt
+	echo "" >> ${subj_dir}/${ID}/stats/${ID}_WMH_stats.txt
+	echo "No_of_total_WMH_voxels	${No_WMHclusters}" >> ${subj_dir}/${ID}/stats/${ID}_WMH_stats.txt
+	echo "No_of_PVWMH_voxels	${No_PVWMHclusters}" >> ${subj_dir}/${ID}/stats/${ID}_WMH_stats.txt
+	echo "No_of_DWMH_voxels	${No_DWMHclusters}" >> ${subj_dir}/${ID}/stats/${ID}_WMH_stats.txt
+	echo "" >> ${subj_dir}/${ID}/stats/${ID}_WMH_stats.txt
+	echo "Vol_of_total_WMH_clusters_in_mm	${Vol_WMHclusters}" >> ${subj_dir}/${ID}/stats/${ID}_WMH_stats.txt
+	echo "Vol_of_PVWMH_clusters_in_mm	${Vol_PVWMHclusters}" >> ${subj_dir}/${ID}/stats/${ID}_WMH_stats.txt
+	echo "Vol_of_DWMH_clusters_in_mm	${Vol_DWMHclusters}" >> ${subj_dir}/${ID}/stats/${ID}_WMH_stats.txt
+	echo "" >> ${subj_dir}/${ID}/stats/${ID}_WMH_stats.txt
+	echo "================================================================" >> ${subj_dir}/${ID}/stats/${ID}_WMH_stats.txt
+	echo "" >> ${subj_dir}/${ID}/stats/${ID}_WMH_stats.txt
+	echo "" >> ${subj_dir}/${ID}/stats/${ID}_WMH_stats.txt
+	echo "===================== Lobar measures ===========================" >> ${subj_dir}/${ID}/stats/${ID}_WMH_stats.txt
+	echo "" >> ${subj_dir}/${ID}/stats/${ID}_WMH_stats.txt
+	echo "No_of_Lfrontal_WMH_voxels	${No_Lfrontal_WMHclusters}" >> ${subj_dir}/${ID}/stats/${ID}_WMH_stats.txt
+	echo "No_of_Rfrontal_WMH_voxels	${No_Rfrontal_WMHclusters}" >> ${subj_dir}/${ID}/stats/${ID}_WMH_stats.txt
+	echo "No_of_Ltemporal_WMH_voxels	${No_Ltemporal_WMHclusters}" >> ${subj_dir}/${ID}/stats/${ID}_WMH_stats.txt
+	echo "No_of_Rtemporal_WMH_voxels	${No_Rtemporal_WMHclusters}" >> ${subj_dir}/${ID}/stats/${ID}_WMH_stats.txt
+	echo "No_of_Lparietal_WMH_voxels	${No_Lparietal_WMHclusters}" >> ${subj_dir}/${ID}/stats/${ID}_WMH_stats.txt
+	echo "No_of_Rparietal_WMH_voxels	${No_Rparietal_WMHclusters}" >> ${subj_dir}/${ID}/stats/${ID}_WMH_stats.txt
+	echo "No_of_Loccipital_WMH_voxels	${No_Loccipital_WMHclusters}" >> ${subj_dir}/${ID}/stats/${ID}_WMH_stats.txt
+	echo "No_of_Roccipital_WMH_voxels	${No_Roccipital_WMHclusters}" >> ${subj_dir}/${ID}/stats/${ID}_WMH_stats.txt
+	echo "No_of_Lcerebellum_WMH_voxels	${No_Lcerebellum_WMHclusters}" >> ${subj_dir}/${ID}/stats/${ID}_WMH_stats.txt
+	echo "No_of_Rcerebellum_WMH_voxels	${No_Rcerebellum_WMHclusters}" >> ${subj_dir}/${ID}/stats/${ID}_WMH_stats.txt
+	echo "No_of_Brainstem_WMH_voxels	${No_Brainstem_WMHclusters}" >> ${subj_dir}/${ID}/stats/${ID}_WMH_stats.txt
+	echo "" >> ${subj_dir}/${ID}/stats/${ID}_WMH_stats.txt
+	echo "Vol_of_Lfrontal_WMH_clusters_in_mm	${Vol_Lfrontal_DWMHclusters}" >> ${subj_dir}/${ID}/stats/${ID}_WMH_stats.txt
+	echo "Vol_of_Rfrontal_WMH_clusters_in_mm	${Vol_Rfrontal_DWMHclusters}" >> ${subj_dir}/${ID}/stats/${ID}_WMH_stats.txt
+	echo "Vol_of_Ltemporal_WMH_clusters_in_mm	${Vol_Ltemporal_DWMHclusters}" >> ${subj_dir}/${ID}/stats/${ID}_WMH_stats.txt
+	echo "Vol_of_Rtemporal_WMH_clusters_in_mm	${Vol_Rtemporal_DWMHclusters}" >> ${subj_dir}/${ID}/stats/${ID}_WMH_stats.txt
+	echo "Vol_of_Lparietal_WMH_clusters_in_mm	${Vol_Lparietal_DWMHclusters}" >> ${subj_dir}/${ID}/stats/${ID}_WMH_stats.txt
+	echo "Vol_of_Rparietal_WMH_clusters_in_mm	${Vol_Rparietal_DWMHclusters}" >> ${subj_dir}/${ID}/stats/${ID}_WMH_stats.txt
+	echo "Vol_of_Loccipital_WMH_clusters_in_mm	${Vol_Loccipital_DWMHclusters}" >> ${subj_dir}/${ID}/stats/${ID}_WMH_stats.txt
+	echo "Vol_of_Roccipital_WMH_clusters_in_mm	${Vol_Roccipital_DWMHclusters}" >> ${subj_dir}/${ID}/stats/${ID}_WMH_stats.txt
+	echo "Vol_of_Lcerebellum_WMH_clusters_in_mm	${Vol_Lcerebellum_DWMHclusters}" >> ${subj_dir}/${ID}/stats/${ID}_WMH_stats.txt
+	echo "Vol_of_Rcerebellum_WMH_clusters_in_mm	${Vol_Rcerebellum_DWMHclusters}" >> ${subj_dir}/${ID}/stats/${ID}_WMH_stats.txt
+	echo "Vol_of_Brainstem_WMH_clusters_in_mm	${Vol_Brainstem_DWMHclusters}" >> ${subj_dir}/${ID}/stats/${ID}_WMH_stats.txt
+	echo "" >> ${subj_dir}/${ID}/stats/${ID}_WMH_stats.txt
+	echo "================================================================" >> ${subj_dir}/${ID}/stats/${ID}_WMH_stats.txt
+
+
+	##################
+	###   finish   ###
+	##################
+
+	echo "*** FINISHED ***"
+	echo ""
+	echo "Refer to ${subj_dir}/${ID}/mri/extractedWMH/${ID}_predicted_WMH_clusters for whole brain WMH!"
+	echo ""
+	echo "Refer to ${subj_dir}/${ID}/mri/extractedWMH/${ID}_predicted_WMH_clusters_PVWMH for periventricular WMH!"
+	echo ""
+	echo "Refer to ${subj_dir}/${ID}/mri/extractedWMH/${ID}_predicted_WMH_clusters_DWMH for deep WMH!"
+	echo ""
+	echo "Refer to ${subj_dir}/${ID}/stats/${ID}_WMH_stats.txt for WMH stats!"
+	echo ""
+	date
+	echo ""
+
+	
+	
+}	
+	
+########################### END OF FUNCTION #######################################
+
+
+
+	
+# invoke the function
+# $1 = ID
+# $2 = subj_dir
+# $3 = pipelinePath
+# $4 = PVWMH magnitude (in mm)
+
+WMHextraction_kNNdiscovery_Step3 $1 $2 $3 $4
+#> "${2}/${1}/mri/extractedWMH/${1}.log"

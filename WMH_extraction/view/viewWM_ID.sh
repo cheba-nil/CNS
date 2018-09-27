@@ -1,0 +1,25 @@
+#!/bin/bash
+
+. ${FSLDIR}/etc/fslconf/fsl.sh
+
+viewWM_ID(){
+
+	studyFolder=$1
+	ID=$2
+
+	WM=`ls ${studyFolder}/subjects/${ID}/mri/preprocessing/c2${ID}_*.nii*`
+	T1=`ls ${studyFolder}/originalImg/T1/${ID}_*.nii*`
+	T1_MIN=`${FSLDIR}/bin/fslstats ${T1} -R | awk '{print $1}'`
+	T1_MAX=`${FSLDIR}/bin/fslstats ${T1} -R | awk '{print $2}'`
+
+	${FSLDIR}/bin/fslview ${T1} \
+								-b ${T1_MIN},${T1_MAX} \
+								${WM} \
+								-t 0.8 \
+								-l "Red-Yellow"
+}
+
+# $1 = study folder
+# $2 = ID
+
+viewWM_ID $1 $2 

@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<body>
+	<h1>Manual Editing</h1>
+	<p>After the final QC, you can select the subjects for manual editing, and re-calculate the volumes of global and regional WMH.</p>
+	<p>a) <i style="background-color:DarkTurquoise">/path/to/CNSP/WMH_extraction/cmd/manEdt/WMHext_manEdt_dnld.sh -s /path/to/studyFolder -i list_of_IDs</i>, where <i>list_of_IDs</i> is the list of IDs you want to edit, separated by coma. The script will generate a manual_editing.tar.gz file under the study folder.</p>
+	<p>b) After uncompressing, the manual_editing folder contains the subjects you want to edit. For each subject, you can overlay the ID_WMH.nii.gz onto wrID_*.nii.gz, and editing the ID_WMH.nii.gz file in FSLVIEW. Replace the ID_WMH.nii.gz file with your edited WMH image.</p>
+	<p>c) After finishing all the subjects, run <i style="background-color:DarkTurquoise">tar czvf manual_editing.tar.gz manual_editing/*</i> in the parent folder of the manual_editing folder.</p>
+	<p>d) Run <i style="background-color:DarkTurquoise">/path/to/CNSP/WMH_extraction/cmd/manEdt/WMHext_manEdt_upld.sh -s /path/to/studyFolder -m /path/to/manual_editing.tar.gz</i></p>
+
+	<p>
+		<a href="UBO_Detector_main.html">Back to UBO Detector manual</a>
+	</p>
+	
+</body>
+</html>

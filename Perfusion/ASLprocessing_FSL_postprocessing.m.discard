@@ -1,0 +1,47 @@
+% DESCRIPTION
+% -----------
+% This script does the postprocessing after the standard ASL processing
+% using FSL, which mainly includes smoothing of the perfusion map. The
+% reason of doing the smoothing was that I found in many casses in OATS
+% PASL that the values in perfusion maps varied a lot - some voxels can be
+% as high as a few hundreds, especially those in the edge of brains.
+%
+% This could be due to the artefact cuased by blood not entering the
+% region, or partial voluming issues I think.
+%
+% What I did is to carry out a mean filtering with 3*3*3 box kernel.
+%
+% This was applied to Wave 3 OATS PASL, including both Brisbane and
+% Melbourne data.
+%
+% 16/04/2018, Dr. Jiyang Jiang
+%
+
+function ASLprocessing_FSL_postprocessing (studyFolder)
+
+PerfusionFolder = fileparts (mfilename ('fullpath'));
+
+if exist ([studyFolder '/subjects/postprocessing'], 'dir') == 7
+    system (['rm -fr ' studyFolder '/subjects/postprocessing']);
+end
+system (['mkdir ' studyFolder '/subjects/postprocessing']);
+
+if exist ([studyFolder '/subjects/postprocessing/smoothed_CBF.txt'], 'file') == 2
+    system (['rm -f ' studyFolder '/subjects/postprocessing/smoothed_CBF.txt']);
+end
+
+
+T1folder = dir ([studyFolder '/originalImg/T1/*.nii.gz']);
+Nsubj = size (T1folder,1);
+
+for i = 1:Nsubj
+    T1filename = T1folder(i).name;
+    IDparts = strsplit (T1filename, '_');
+    ID = IDparts{1};
+    system ([PerfusionFolder '/ASLprocessing_FSL/ASLprocessing_FSL_postprocessing_smoothing.sh ' ...
+                studyFolder ' ' ...
+                ID]);
+end
+
+
+

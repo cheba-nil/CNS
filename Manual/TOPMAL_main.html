@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+	<h1>TOolbox for Probablistic MApping of Lesions (TOPMAL) User Manual</h1>
+
+	<p>
+		TOPMAL can map any lesion masks in DARTEL space to Johns Hopkins White Matter Tractography Atlas (JHU-WM atlas) or
+		Harvard-Oxford (HO) Subcortical Atlas. The output of lesion loadings can be used for region-of-interest (ROI) lesion-
+		symptom mapping (LSM) studies (see <a href="https://www.ncbi.nlm.nih.gov/pubmed/28385827"> Biesbroek JM, et al.</a> for a review).
+	</p>
+
+
+	<h2>Citation</h2>
+
+	<p>
+		If TOPMAL is used in your study, please cite:
+	</p>
+
+	<p>
+		<i>
+			Jiang, J., Paradise, M., Liu, T., Armstrong, N. J., Zhu, W., Kochan, N. A., Brodaty, H., Sachdev, P. S., Wen, W. The association of regional white matter lesions with cognition in a community-based cohort of older individuals, NeuroImage: Clinical 19:14-21 (2018), 
+			doi.org/10.1016/j.nicl.2018.03.035 
+		</i>
+	</p>
+
+	<p>
+		Please also refer to <a href="https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/Atlases">this website</a> for proper citation of the atlases.<br/>
+	</p>
+
+
+
+	<h2>TOPMAL GUI User Guide</h2>
+
+	<p>
+		Step 1: In MATLAB, add CNS to your path: <i style="background-color:DarkTurquoise">addpath ('/path/to/CNS');</i>
+	</p>
+
+
+	<p>
+		Step 2: Open CNS by typing <i style="background-color:DarkTurquoise">CNS</i>
+	</p>
+
+	<p>
+		Step 3: In the menu, select <i style="background-color:DarkSeaGreen">map2atlas -> TOPMAL</i>. You will see the user interface of TOPMAL.
+	</p>
+
+	<p>
+		Step 4: If your lesion masks are white matter lesion (WML) masks generated using <a href="UBO_Detector_main.html">UBO Detector</a> which follows a specific folder structure, please select <i style="background-color:DarkSeaGreen">Yes</i> to the question "Lesion masks from UBO Detector?". Otherwise, please choose <i style="background-color:DarkSeaGreen">No</i>, and prepare a folder with lesion masks in DARTEL space, and name them as ID_lesMask.nii.
+	</p>
+
+	<p>
+		Step 5: Use the <i style="background-color:DarkSeaGreen">Find</i> button to specify the path to the study folder where the output will be saved.
+	</p>
+
+	<p>
+		Step 6: Use the <i style="background-color:DarkSeaGreen">Find</i> button to specify the path to the folder where the lesion masks are stored. These lesion masks should have been warped to DARTEL space. This step is not necessary for WML masks generated from UBO Detector (i.e. answering "Yes" to Step 4).
+	</p>
+
+	<p>
+		Step 7: Use the <i style="background-color:DarkSeaGreen">Find</i> button to specify the path to SPM12 folder.
+	</p>
+
+	<p>
+		Step 8: If you are using WML lesion masks generated from UBO Detector, and used the "existing template" option in UBO Detector to map to the existing DARTEL templates, i.e. either existing DARTEL templates for less than 55 years old, 65-75 years old, or 70-80 years old, please select <i style="background-color:DarkSeaGreen">existing template for less than 55 yo</i>, <i style="background-color:DarkSeaGreen">existing template for 65 to 75 yo</i>, or <i style="background-color:DarkSeaGreen">existing template for 70 to 80 yo</i> correspondingly. In such cases, we have stored the warped atlases in DARTEL space in CNS, and you do not need to rerun DARTEL. Otherwise, please select <i style="background-color:DarkSeaGreen">creating template</i>, and TOPMAL will pop up a window to ask for Template1.nii, Template2.nii, ... Template6.nii for the MNI-to-DARTEL transformation.
+	</p>
+
+	<p>
+		Step 9: Choose the atlas you want to map the lesion masks to. <i style="background-color:DarkSeaGreen">"JHU-ICBM_WM_tract_prob_1mm"</i> represents the Johns Hopkins White Matter Tractography Atlas, and <i style="background-color:DarkSeaGreen">"HO_subcortical_1mm"</i> is the Harvard-Oxford Subcortical Structural Atlas.
+	</p>
+
+	<p>
+		Step 10: Input the IDs (separated by space) you want to exclude from the TOPMAL analysis. This text box is only activated if you choose "Yes" to the question of "Lesion masks from UBO Detector", meaning that if you excluded any subjects from UBO Detector, please list them in this text box.
+	</p>
+
+	<p>
+		Step 11: Click <i style="background-color:DarkSeaGreen">Run TOPMAL</i> to run the analysis.<br/>
+	</p>
+
+
+
+
+	<h2>TOPMAL Commandline User Guide</h2>
+
+	<p>
+		Users can run commandline from MATLAB command window (or with a bit of coding from Linux shell).
+	</p>
+
+	<p>
+		Step 1: Add TOPMAL folder to path: <i style="background-color:DarkTurquoise">addpath ('/path_to_CNS/TOPMAL');</i>
+	</p>
+
+	<p>
+		Step 2: Run TOPMAL.<br/>
+
+			&emsp;&emsp;&emsp;&emsp;If the lesion masks were WML masks from UBO Detector, please use TOPMAL_UDver.m. For example, <br/>
+		
+			<br/>
+			&emsp;&emsp;&emsp;&emsp;<i style="background-color:DarkTurquoise">TOPMAL_UDver ('/path/to/study/folder', ...</i><br/>
+			&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; <i style="background-color:DarkTurquoise">DARTELtemplate, ...</i><br/>
+			&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; <i style="background-color:DarkTurquoise">ageRange, ...</i><br/>
+			&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; <i style="background-color:DarkTurquoise">/path/to/SPM12, ...</i><br/>
+			&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; <i style="background-color:DarkTurquoise">atlasCode, ...</i><br/>
+			&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; <i style="background-color:DarkTurquoise">excldList);</i><br/>
+			
+
+			&emsp;&emsp;&emsp;&emsp;If the lesion masks were from elsewhere, please use TOPMAL_generic.m. For example, <br/>
+
+			<br/>
+			&emsp;&emsp;&emsp;&emsp;<i style="background-color:DarkTurquoise">TOPMAL_generic ('/path/to/DARTEL/lesion/masks/folder', ...</i><br/>
+			&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; <i style="background-color:DarkTurquoise">'/path/to/study/folder', ...</i><br/>
+			&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; <i style="background-color:DarkTurquoise">DARTELtemplate, ...</i><br/>
+			&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; <i style="background-color:DarkTurquoise">ageRange, ...</i><br/>
+			&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; <i style="background-color:DarkTurquoise">/path/to/SPM12, ...</i><br/>
+			&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; <i style="background-color:DarkTurquoise">atlasCode);</i><br/>
+			<br/>
+			<p>
+				&emsp;&emsp;&emsp;&emsp;<i>DARTELtemplate</i> can be either 'existing template' or 'creating template'.<br/>
+				&emsp;&emsp;&emsp;&emsp;<i>ageRange</i> can be 'lt55', '65to75', or '70to80' for 'existing template', or 'NA' for 'creating template'.<br/>
+				&emsp;&emsp;&emsp;&emsp;<i>atlasCode</i> can be 'JHU-ICBM_WM_tract_prob_1mm' or 'HO_subcortical_1mm'.<br/>
+				&emsp;&emsp;&emsp;&emsp;<i>excludList</i> is the list of IDs, separated by space, that you want to exclude from TOPMAL analyses.<br/>
+			</p>
+	</p>
+
+
+
+	<h2>TOPMAL Output</h2>
+	
+	<h3>Image output from TOPMAL</h3>
+	<p>
+		The images showing lesion masks mapping to atlas can be found at:<br/><br/>
+		&emsp;&emsp;&emsp;&emsp;<i>/path_to_study_folder/subjects/ID/mri/TOPMAL</i><br/><br/>
+		The atlases are in 4D format, with each volume showing one structure. The image outputs from TOPMAL are in 3D with each image showing one structure.<br>
+	</p>
+
+	<h3>Text output from TOPMAL</h3>
+	<p>
+		For each subject, the text output can be found at:<br/><br/>
+		&emsp;&emsp;&emsp;&emsp;<i>/path_to_study_folder/subjects/ID/stats</i><br/><br/>
+		Each row represents one structure (see Appendix A for structure name). The five columns are <i><u>Absolute loading</u></i>, <i><u>Fractional loading</u></i>, <i><u>Number of voxels where lesion mask overlaps with each 3D atlas</u></i>(i.e. the 3D atlases (each represents one structure) splitted from the 4D atlas), <i><u>Number of completely void voxels</u></i>, and <i><u>Void loading of partially void voxels</u></i>. Please note the same number is shown in Column 4 and 5, respectively. This is because for one subject the number of completely void voxels and the void loading of partially void voxels are fixed.
+	</p>
+
+	<p>
+		For the whole cohort, TOPMAL outputs are summarised in:<br/><br/>
+		&emsp;&emsp;&emsp;&emsp;<i>/path_to_study_folder/subjects/TOPMAL_JHUwm_allprob.txt</i><br/><br/>
+		OR<br/><br/>
+		&emsp;&emsp;&emsp;&emsp;<i>/path_to_study_folder/subjects/TOPMAL_HOsub_allprob.txt</i><br/><br/>
+		Where <i>*_absLoading</i> is the absolute loading; <i>*_fraLoading</i> is the fractional loading; <i>*_Nvox</i> is the number of voxels where lesion mask overlaps with the structure; <i>N_complete_void_vox</i> is the number of completely void voxels; <i>totalVoidLoading_partialVoidVox</i> is the total void loading of partially void voxels.
+	</p>
+
+
+
+
+	<h2>Appendix A: Structure name for JHU-WM and HO Subcortical atlases</h2>
+	<p>
+		<b>JHU WM tracts</b><br/>
+		JHU0	anterior_thalamic_radiation_L<br/>
+		JHU1	anterior_thalamic_radiation_R<br/>
+		JHU2	corticospinal_tract_L<br/>
+		JHU3	corticospinal_tract_R<br/>
+		JHU4	cingulum_(cingulate_gyrus)_L<br/>
+		JHU5	cingulum_(cingulate_gyrus)_R<br/>
+		JHU6	cingulum_(hippocampus)_L<br/>
+		JHU7	cingulum_(hippocampus)_R<br/>
+		JHU8	forceps_major<br/>
+		JHU9	forceps_minor<br/>
+		JHU10	inferior_fronto-occipital_fasciculus_L<br/>
+		JHU11	inferior_fronto-occipital_fasciculus_R<br/>
+		JHU12	inferior_longitudinal_fasciculus_L<br/>
+		JHU13	inferior_longitudinal_fasciculus_R<br/>
+		JHU14	superior_longitudinal_fasciculus_L<br/>
+		JHU15	superior_longitudinal_fasciculus_R<br/>
+		JHU16	uncinate_fasciculus_L<br/>
+		JHU17	uncinate_fasciculus_R<br/>
+		JHU18	superior_longitudinal_fasciculus_(temporal_part)_L<br/>
+		JHU19	superior_longitudinal_fasciculus_(temporal_part)_R<br/>
+		<br/>
+		<b>HO subcortical</b><br/>
+		HO0	left_cerebral_white_matter<br/>
+		HO1	left_cerebral_cortex<br/>
+		HO2	left_lateral_ventricle<br/>
+		HO3	left_thalamus<br/>
+		HO4	left_caudate<br/>
+		HO5	left_putamen<br/>
+		HO6	left_pallidum<br/>
+		HO7	brain-stem<br/>
+		HO8	left_hippocampus<br/>
+		HO9	left_amygdala<br/>
+		HO10	left_accumbens<br/>
+		HO11	right_cerebral_white_matter<br/>
+		HO12	right_cerebral_cortex<br/>
+		HO13	right_lateral_ventricle<br/>
+		HO14	right_thalamus<br/>
+		HO15	right_caudate<br/>
+		HO16	right_putamen<br/>
+		HO17	right_pallidum<br/>
+		HO18	right_hippocampus<br/>
+		HO19	right_amygdala<br/>
+		HO20	right_accumbens<br/>
+	</p>
+
+<p></p>
+
+	<p><a href="CNS_main.html">Back to CNS manual</a></p>
+</body>
+</html>

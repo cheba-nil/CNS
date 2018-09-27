@@ -1,0 +1,34 @@
+<html>
+<body>
+<h1>Longitudinal Pipeline</h1>
+	<p>Longitudinal version of UBO Detector is only available in commandline at the moment.</p>
+
+<h2>Data Preparation</h2>
+	<p>The longitudinal pipeline required a slightly different data preparation. Specifically, T1 and FLAIR data need to be renamed as ID_tp1_*.nii.gz, ID_tp2_*.nii.gz, where tp is an abbreviation of time point, tp1 means the first time point, and tp2 is the second time point, etc. These data should be saved in a similar folder structure as that described for cross-sectional UBO Detector processing:</p>
+	<a><img src="UBO_Detector_Manual_Figures/UBO_Detector_Figure_1.png" WIDTH=600></a><br>
+
+
+<h2>Running Longitudinal Pipeline</h2>
+	<p>Step 1: Add path in MATLAB. <i style="background-color:DarkTurquoise">addpath ('/path_to_CNS/WMH_extraction/WMHextraction_long');</i></p>
+
+	<p>Step 2: Run longitudinal pipeline. <i style="background-color:DarkTurquoise">WMHextraction_long_paired (studyFolder, ...</i><br>
+    &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;<i style="background-color:DarkTurquoise">Ntp, ...</i><br>
+    &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;<i style="background-color:DarkTurquoise">spm12path, ...</i><br>
+    &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;<i style="background-color:DarkTurquoise">dartelTemplate, ...</i><br>
+    &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;<i style="background-color:DarkTurquoise">k, ...</i><br>
+    &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;<i style="background-color:DarkTurquoise">PVWMH_magnitude, ...</i><br>
+    &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;<i style="background-color:DarkTurquoise">coregExcldList, ...</i><br>
+    &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;<i style="background-color:DarkTurquoise">segExcldList, ...</i><br>
+    &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;<i style="background-color:DarkTurquoise">classifier, ...</i><br>
+    &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;<i style="background-color:DarkTurquoise">ageRange, ...</i><br>
+    &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;<i style="background-color:DarkTurquoise">probThr, ...</i><br>
+    &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;<i style="background-color:DarkTurquoise">outputFormat);</i></p>
+
+    <p style="text-indent:1em;padding:3em">where <i>studyFolder</i> is the path to the study folder; <i>Ntp</i> is the number of time points; <i>spm12path</i> is the path to SPM12; <i>dartelTemplate</i> is either 'existing template' or 'creating template'; <i>k</i> is the k for kNN; <i>PVWMH_magnitude</i> is the distance (in mm) from lateral ventricles which defines periventricular and deep WMH; <i>coregExcldList</i> is the list of IDs who failed FLAIR-to-T1 coregistration, and will be excluded in future analyses. Use '' to pass an empty list; <i>segExcldList</i> is the list of IDs who failed the T1 segmentation step, and will be excluded in future analyses. Use '' to pass an empty list; <i>classifier</i> is either 'built-in' or 'customised'; <i>ageRange</i> is either 'lt55', '65to75', or '70to80'; <i>probThr</i> is the probability threshold to threshold WMH probability map; <i>outputFormat</i> is how you want to view the QC results, either 'web', 'arch', or 'web&arch'.</p>
+
+
+	<p>
+		<a href="UBO_Detector_main.html">Back to UBO Detector manual</a>
+	</p>
+</body>
+</html>

@@ -1,0 +1,26 @@
+% --- Plotting matrix from Excel --- %
+function CNSP_plotMtx (inputFile, PlotTitle)
+
+mtxTBL = readtable(inputFile,'ReadVariableNames',true,'ReadRowNames',true);
+
+mtxTBL_varNames = mtxTBL.Properties.VariableNames;
+mtxTBL_rowNames = mtxTBL.Properties.RowNames;
+[~, mtxTBL_Ncol] = size(mtxTBL_varNames);
+[mtxTBL_Nrow, ~] = size(mtxTBL_rowNames);
+
+dataArr = table2array(mtxTBL);
+image(dataArr, 'CDataMapping', 'scaled');
+
+set(gca,'XTick',1:mtxTBL_Ncol, ...
+        'XTickLabel',mtxTBL_varNames, ...
+        'XTickLabelRotation',45, ...
+        'YTick', 1:mtxTBL_Nrow, ...
+        'YTickLabel', reshape(mtxTBL_rowNames, 1, mtxTBL_Nrow), ...
+        'XAxisLocation', 'top', ...
+        'FontName', 'Times New Roman', ...
+        'FontSize', 12 ...
+   );
+
+    
+colorbar;
+title (PlotTitle);

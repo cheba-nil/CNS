@@ -1,0 +1,16 @@
+HOJmod_vol0	left_cerebral_cortex
+HOJmod_vol1	left_thalamus
+HOJmod_vol2	left_caudate
+HOJmod_vol3	left_putamen
+HOJmod_vol4	left_pallidum
+HOJmod_vol5	left_hippocampus
+HOJmod_vol6	left_amygdala
+HOJmod_vol7	left_accumbens
+HOJmod_vol8	right_cerebral_cortex
+HOJmod_vol9	right_thalamus
+HOJmod_vol10	right_caudate
+HOJmod_vol11	right_putamen
+HOJmod_vol12	right_pallidum
+HOJmod_vol13	right_hippocampus
+HOJmod_vol14	right_amygdala
+HOJmod_vol15	right_accumbens

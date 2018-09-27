@@ -1,0 +1,26 @@
+#!/bin/bash
+
+. ${FSLDIR}/etc/fslconf/fsl.sh
+
+FSL_postprocessing_smoothing(){
+	studyFolder=$1
+	ID=$2
+
+	if [ ! -d "${studyFolder}/subjects/postprocessing" ]; then
+		mkdir ${studyFolder}/subjects/postprocessing
+	fi
+
+	M0=`cat ${studyFolder}/subjects/${ID}/${ID}_invKineticMdl_wT1/calib/M0.txt`
+
+	fslmaths ${studyFolder}/subjects/${ID}/${ID}_invKineticMdl_wT1/native_space/perfusion \
+			 -kernel 3D \
+			 -fmean \
+			 -div ${M0} \
+			 -mul 6000 \
+			 ${studyFolder}/subjects/postprocessing/${ID}_smoothed_absCBF
+
+	sCBF=`fslstats ${studyFolder}/subjects/postprocessing/${ID}_smoothed_absCBF -M`
+	echo ${ID},${sCBF} >> ${studyFolder}/subjects/postprocessing/smoothed_CBF.txt
+}
+
+FSL_postprocessing_smoothing $1 $2

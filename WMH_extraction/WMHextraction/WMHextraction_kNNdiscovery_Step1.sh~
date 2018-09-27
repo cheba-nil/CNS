@@ -1,0 +1,331 @@
+#!/bin/bash
+
+
+#######################
+##    kNN Step 1     ##
+#######################
+## kNN preprocessing ##
+#######################
+
+. ${FSLDIR}/etc/fslconf/fsl.sh
+
+
+echo ""
+echo "*********** $1 ****************"
+echo "***  kNN discovery step1   ***"
+echo ""
+date
+echo ""
+echo "Subjects dir = $2"
+echo ""
+echo "Pipeline dir = $3"
+echo ""
+echo "Start processing ..."
+echo ""
+
+
+WMHextraction_kNNdiscovery_Step1(){
+
+	## read the first input as ID
+	ID="$1"
+
+	## read the second input as subj_dir
+	subj_dir=$2
+
+	## pipeline path
+	pipPath=$3
+
+
+	## set directory
+	## ${subj_dir} is the dir to subjects which needs to be set by user
+	seg0="${subj_dir}/${ID}/mri/preprocessing/FAST_nonBrainRemoved_wr${ID}_*_seg_0.nii*"
+	seg1="${subj_dir}/${ID}/mri/preprocessing/FAST_nonBrainRemoved_wr${ID}_*_seg_1.nii*"
+	seg2="${subj_dir}/${ID}/mri/preprocessing/FAST_nonBrainRemoved_wr${ID}_*_seg_2.nii*"
+
+	wmSeg="${subj_dir}/${ID}/mri/preprocessing/wc2${ID}_*.nii*"
+	gmSeg="${subj_dir}/${ID}/mri/preprocessing/wc1${ID}_*.nii*"
+	csfSeg="${subj_dir}/${ID}/mri/preprocessing/wc3${ID}_*.nii*"
+
+	dartelT1="${subj_dir}/${ID}/mri/preprocessing/nonBrainRemoved_w${ID}_*.nii*"
+	dartelFLAIR="${subj_dir}/${ID}/mri/preprocessing/FAST_nonBrainRemoved_wr${ID}_*_restore.nii*"
+
+	WM_avg_mask="${pipPath}/Templates/OATS_averaged_probability_maps/oatsALL375whiteMatter4wmhProject_ventricleFilled.nii.gz"
+	WM_avg_mask_bin="${pipPath}/Templates/OATS_averaged_probability_maps/oatsALL375whiteMatter4wmhProject_ventricleFilled_binarized.nii.gz"
+	
+	PVWMH_magnitude=$4  ## distance (in mm) to ventricle on distance map
+
+	k=$5  ## k for kNN
+
+
+
+	## create the folder to contain results
+	if [ ! -d "${subj_dir}/${ID}/mri/extractedWMH" ]; then
+		mkdir "${subj_dir}/${ID}/mri/extractedWMH"
+	fi
+
+	## create the folder to contain temp files for kNN
+	if [ ! -d "${subj_dir}/${ID}/mri/extractedWMH/temp" ]; then
+		mkdir "${subj_dir}/${ID}/mri/extractedWMH/temp"
+	fi
+
+	## create the folder to contain intermediate results
+	if [ ! -d "${subj_dir}/${ID}/mri/kNN_intermediateOutput" ]; then
+		mkdir "${subj_dir}/${ID}/mri/kNN_intermediateOutput"
+	fi
+
+
+
+	################################################################
+	#### zero nan values in individual GM and CSF segmentations ###
+	################################################################
+	${FSLDIR}/bin/fslmaths ${gmSeg} -nan ${subj_dir}/${ID}/mri/kNN_intermediateOutput/zeroNan_wc1${ID}_t1GM
+	${FSLDIR}/bin/fslmaths ${csfSeg} -nan ${subj_dir}/${ID}/mri/kNN_intermediateOutput/zeroNan_wc3${ID}_t1CSF
+
+	echo "The nan values in ${ID}'s GM and CSF segmentation were set to zero!"
+
+
+
+
+	###################################################################################
+	###   binarize individual GM and CSF segmentation to generate individual mask   ###
+	###################################################################################
+
+	## 20/02/2017 Considering the values larger than 0.8 on probability maps are actual GM, WM, and CSF
+
+	# GM_seg_bin_thr=20  	## threshold = top (100-{GM_seg_bin_thr})% of the non-zero voxels
+	# CSF_seg_bin_thr=20  	## threshold = top (100-{CSF_seg_bin_thr})% of the non-zero voxels
+
+	
+	## GM
+
+	# let top_percentile_GM=100-GM_seg_bin_thr
+
+	# gmMaskBinarizeThreshold=`${FSLDIR}/bin/fslstats "${subj_dir}/${ID}/mri/kNN_intermediateOutput/zeroNan_wc1${ID}_t1GM" -P ${GM_seg_bin_thr}`
+	# echo "The threshold to binarize ${ID}'s GM segmentation is set to ${gmMaskBinarizeThreshold}, which includes top ${top_percentile_GM}% of the non-zero voxels."
+
+	# ${FSLDIR}/bin/fslmaths ${subj_dir}/${ID}/mri/kNN_intermediateOutput/zeroNan_wc1${ID}_t1GM \
+	# 	-thr ${gmMaskBinarizeThreshold} \
+	# 	-bin ${subj_dir}/${ID}/mri/kNN_intermediateOutput/binarized_zeroNan_wc1${ID}_t1GM
+
+	${FSLDIR}/bin/fslmaths ${subj_dir}/${ID}/mri/kNN_intermediateOutput/zeroNan_wc1${ID}_t1GM \
+		-thr 0.8 \
+		-bin ${subj_dir}/${ID}/mri/kNN_intermediateOutput/binarized_zeroNan_wc1${ID}_t1GM
+
+	echo "${ID}'s GM segmentation has been binarized into GM mask!"
+
+	
+	## binarize OATS average WM mask, 01/08/2016
+
+	# OATS_binarizing_thr=80
+	# oatsWMmask_bin_thr=`${FSLDIR}/bin/fslstats ${WM_avg_mask} -P ${OATS_binarizing_thr}`
+	# ${FSLDIR}/bin/fslmaths ${WM_avg_mask} -thr ${oatsWMmask_bin_thr} -bin ${WM_avg_mask_bin}
+	
+	# ${FSLDIR}/bin/fslmaths ${WM_avg_mask} -thr 0.8 -bin ${WM_avg_mask_bin}
+
+
+	#CSF (CSF rough mask)
+	
+	# let top_percentile_CSF=100-CSF_seg_bin_thr
+
+	# csfMaskBinarizeThreshold=`${FSLDIR}/bin/fslstats "${subj_dir}/${ID}/mri/kNN_intermediateOutput/zeroNan_wc3${ID}_t1CSF" -P ${CSF_seg_bin_thr}`
+	# echo "The threshold to binarize ${ID}'s CSF segmentation is set to ${csfMaskBinarizeThreshold}, which includes top ${top_percentile_CSF}% of the non-zero voxels."
+
+	# ${FSLDIR}/bin/fslmaths ${subj_dir}/${ID}/mri/kNN_intermediateOutput/zeroNan_wc3${ID}_t1CSF \
+	# 	-thr ${csfMaskBinarizeThreshold} \
+	# 	-bin ${subj_dir}/${ID}/mri/kNN_intermediateOutput/binarized_zeroNan_wc3${ID}_t1CSF
+
+	${FSLDIR}/bin/fslmaths ${subj_dir}/${ID}/mri/kNN_intermediateOutput/zeroNan_wc3${ID}_t1CSF \
+		-thr 0.8 \
+		-bin ${subj_dir}/${ID}/mri/kNN_intermediateOutput/binarized_zeroNan_wc3${ID}_t1CSF
+
+	echo "${ID}'s CSF segmentation has been binarized into CSF mask!"
+
+
+
+	############################################################################
+	###              mask WM, GM, CSF regions from seg0,1,2                  ###
+	############################################################################
+
+	## Seg 0
+	${FSLDIR}/bin/fslmaths ${seg0} -mas ${WM_avg_mask_bin} \
+			${subj_dir}/${ID}/mri/kNN_intermediateOutput/WMmasked_FAST_nonBrainRemoved_wr${ID}_flair_seg_0
+
+	${FSLDIR}/bin/fslmaths ${seg0} -mas ${subj_dir}/${ID}/mri/kNN_intermediateOutput/binarized_zeroNan_wc1${ID}_t1GM \
+			${subj_dir}/${ID}/mri/kNN_intermediateOutput/GMmasked_FAST_nonBrainRemoved_wr${ID}_flair_seg_0
+
+	${FSLDIR}/bin/fslmaths ${seg0} -mas ${subj_dir}/${ID}/mri/kNN_intermediateOutput/binarized_zeroNan_wc3${ID}_t1CSF \
+			${subj_dir}/${ID}/mri/kNN_intermediateOutput/CSFmasked_FAST_nonBrainRemoved_wr${ID}_flair_seg_0
+
+	echo "${ID}'s WM, GM and CSF mask have been applied to his/her seg0!"
+
+
+	## Seg 1
+	${FSLDIR}/bin/fslmaths ${seg1} -mas ${WM_avg_mask_bin} \
+			${subj_dir}/${ID}/mri/kNN_intermediateOutput/WMmasked_FAST_nonBrainRemoved_wr${ID}_flair_seg_1
+
+	${FSLDIR}/bin/fslmaths ${seg1} -mas ${subj_dir}/${ID}/mri/kNN_intermediateOutput/binarized_zeroNan_wc1${ID}_t1GM \
+			${subj_dir}/${ID}/mri/kNN_intermediateOutput/GMmasked_FAST_nonBrainRemoved_wr${ID}_flair_seg_1
+
+	${FSLDIR}/bin/fslmaths ${seg1} -mas ${subj_dir}/${ID}/mri/kNN_intermediateOutput/binarized_zeroNan_wc3${ID}_t1CSF \
+			${subj_dir}/${ID}/mri/kNN_intermediateOutput/CSFmasked_FAST_nonBrainRemoved_wr${ID}_flair_seg_1
+
+	echo "${ID}'s WM, GM and CSF mask have been applied to his/her seg1!"
+
+
+	## Seg 2
+	${FSLDIR}/bin/fslmaths ${seg2} -mas ${WM_avg_mask_bin} \
+			${subj_dir}/${ID}/mri/kNN_intermediateOutput/WMmasked_FAST_nonBrainRemoved_wr${ID}_flair_seg_2
+
+	${FSLDIR}/bin/fslmaths ${seg2} -mas ${subj_dir}/${ID}/mri/kNN_intermediateOutput/binarized_zeroNan_wc1${ID}_t1GM \
+			${subj_dir}/${ID}/mri/kNN_intermediateOutput/GMmasked_FAST_nonBrainRemoved_wr${ID}_flair_seg_2
+
+	${FSLDIR}/bin/fslmaths ${seg2} -mas ${subj_dir}/${ID}/mri/kNN_intermediateOutput/binarized_zeroNan_wc3${ID}_t1CSF \
+			${subj_dir}/${ID}/mri/kNN_intermediateOutput/CSFmasked_FAST_nonBrainRemoved_wr${ID}_flair_seg_2
+
+	echo "${ID}'s WM, GM and CSF mask have been applied to his/her seg2!"
+
+
+
+
+	######################################################################################
+	###              mask WM, GM, CSF regions in DARTEL T1 and FLAIR brains            ###
+	######################################################################################
+
+	## DARTEL T1
+	${FSLDIR}/bin/fslmaths ${dartelT1} -mas ${WM_avg_mask_bin} \
+			${subj_dir}/${ID}/mri/kNN_intermediateOutput/WMmasked_w${ID}_dartelT1
+
+	${FSLDIR}/bin/fslmaths ${dartelT1} -mas ${subj_dir}/${ID}/mri/kNN_intermediateOutput/binarized_zeroNan_wc1${ID}_t1GM \
+			${subj_dir}/${ID}/mri/kNN_intermediateOutput/GMmasked_w${ID}_dartelT1
+
+	${FSLDIR}/bin/fslmaths ${dartelT1} -mas ${subj_dir}/${ID}/mri/kNN_intermediateOutput/binarized_zeroNan_wc3${ID}_t1CSF \
+			${subj_dir}/${ID}/mri/kNN_intermediateOutput/CSFmasked_w${ID}_dartelT1
+
+	echo "${ID}'s GM, WM, and CSF mask have been applied to his/her DARTEL T1 image!"
+
+
+
+	## DARTEL FLAIR
+	${FSLDIR}/bin/fslmaths ${dartelFLAIR} -mas ${WM_avg_mask_bin} \
+			${subj_dir}/${ID}/mri/kNN_intermediateOutput/WMmasked_wr${ID}_dartelFLAIR
+
+	${FSLDIR}/bin/fslmaths ${dartelFLAIR} -mas ${subj_dir}/${ID}/mri/kNN_intermediateOutput/binarized_zeroNan_wc1${ID}_t1GM \
+			${subj_dir}/${ID}/mri/kNN_intermediateOutput/GMmasked_wr${ID}_dartelFLAIR
+
+	${FSLDIR}/bin/fslmaths ${dartelFLAIR} -mas ${subj_dir}/${ID}/mri/kNN_intermediateOutput/binarized_zeroNan_wc3${ID}_t1CSF \
+			${subj_dir}/${ID}/mri/kNN_intermediateOutput/CSFmasked_wr${ID}_dartelFLAIR
+
+	echo "${ID}'s WM, GM and CSF mask have been applied to his/her DARTEL FLAIR image!"
+
+
+	###########################################################################
+	###                 Create accurate individual CSF mask                 ###
+	###                            29/07/2016                               ###
+	###########################################################################
+
+	## deal with NaN problem for CSF masked FLAIR's, can be removed in the future
+	${FSLDIR}/bin/fslmaths ${subj_dir}/${ID}/mri/kNN_intermediateOutput/CSFmasked_wr${ID}_dartelFLAIR \
+			-nan ${subj_dir}/${ID}/mri/kNN_intermediateOutput/CSFmasked_wr${ID}_dartelFLAIR
+	
+	mean=`${FSLDIR}/bin/fslstats ${subj_dir}/${ID}/mri/kNN_intermediateOutput/CSFmasked_wr${ID}_dartelFLAIR -M`
+	sd=`${FSLDIR}/bin/fslstats ${subj_dir}/${ID}/mri/kNN_intermediateOutput/CSFmasked_wr${ID}_dartelFLAIR -S`
+
+	echo "The mean intensity of the regions masked by individual rough_CSF_mask is ${mean} in ${ID}'s FLAIR, and SD is ${sd}."
+	echo "Now building a binarized accurate CSF mask using the mean + 0.5 SD (i.e. zero any voxel above this value)."
+	thr=`bc <<< "${mean} + 0.5 * ${sd}"`
+
+	${FSLDIR}/bin/fslmaths ${dartelFLAIR} -uthr ${thr} -binv -mas ${dartelFLAIR} ${subj_dir}/${ID}/mri/kNN_intermediateOutput/inv_${ID}_dartelFLAIR_accurateCSFmask
+	
+
+	
+
+	###############################################################################################
+	###               Apply WM-masked seg0, seg1, seg2 to DARTEL T1 & FLAIR                     ###
+	###############################################################################################
+	
+	## T1
+	${FSLDIR}/bin/fslmaths ${dartelT1} -mas \
+			${subj_dir}/${ID}/mri/kNN_intermediateOutput/WMmasked_FAST_nonBrainRemoved_wr${ID}_flair_seg_0 \
+			${subj_dir}/${ID}/mri/kNN_intermediateOutput/apply_WMmaskedSeg0_to_${ID}_dartelT1
+	${FSLDIR}/bin/fslmaths ${dartelT1} -mas \
+			${subj_dir}/${ID}/mri/kNN_intermediateOutput/WMmasked_FAST_nonBrainRemoved_wr${ID}_flair_seg_1 \
+			${subj_dir}/${ID}/mri/kNN_intermediateOutput/apply_WMmaskedSeg1_to_${ID}_dartelT1
+	${FSLDIR}/bin/fslmaths ${dartelT1} -mas \
+			${subj_dir}/${ID}/mri/kNN_intermediateOutput/WMmasked_FAST_nonBrainRemoved_wr${ID}_flair_seg_2 \
+			${subj_dir}/${ID}/mri/kNN_intermediateOutput/apply_WMmaskedSeg2_to_${ID}_dartelT1
+	echo "WM-masked seg0, seg1 and seg2 have been applied to DARTEL T1"
+
+
+	## FLAIR
+	${FSLDIR}/bin/fslmaths ${dartelFLAIR} -mas \
+			${subj_dir}/${ID}/mri/kNN_intermediateOutput/WMmasked_FAST_nonBrainRemoved_wr${ID}_flair_seg_0 \
+			${subj_dir}/${ID}/mri/kNN_intermediateOutput/apply_WMmaskedSeg0_to_${ID}_FLAIR
+	${FSLDIR}/bin/fslmaths ${dartelFLAIR} -mas \
+			${subj_dir}/${ID}/mri/kNN_intermediateOutput/WMmasked_FAST_nonBrainRemoved_wr${ID}_flair_seg_1 \
+			${subj_dir}/${ID}/mri/kNN_intermediateOutput/apply_WMmaskedSeg1_to_${ID}_FLAIR
+	${FSLDIR}/bin/fslmaths ${dartelFLAIR} -mas \
+			${subj_dir}/${ID}/mri/kNN_intermediateOutput/WMmasked_FAST_nonBrainRemoved_wr${ID}_flair_seg_2 \
+			${subj_dir}/${ID}/mri/kNN_intermediateOutput/apply_WMmaskedSeg2_to_${ID}_FLAIR
+	echo "WM-masked seg0, seg1 and seg2 have been applied to DARTEL FLAIR"
+
+	
+	
+	
+	###############################################################################
+	####  Apply the accurate CSF mask to ventricle-filled OATS average WM map, ####
+	####  for kNN								   ####
+	###############################################################################
+	
+	${FSLDIR}/bin/fslmaths ${WM_avg_mask} -mas \
+			${subj_dir}/${ID}/mri/kNN_intermediateOutput/inv_${ID}_dartelFLAIR_accurateCSFmask \
+			${subj_dir}/${ID}/mri/kNN_intermediateOutput/${ID}_accurateCSFmasked_OATSaverageWM
+	
+	
+	
+	###################################################
+	####  Apply the accurate CSF mask to seg0,1,2, ####
+	####  for kNN  				       ####
+	###################################################
+	
+	### Only apply accurate CSF mask
+	# ${FSLDIR}/bin/fslmaths ${seg0} -mas \
+	# 		${subj_dir}/${ID}/mri/kNN_intermediateOutput/inv_${ID}_dartelFLAIR_accurateCSFmask \
+	# 		${subj_dir}/${ID}/mri/kNN_intermediateOutput/${ID}_accurateCSFmasked_seg0
+	# ${FSLDIR}/bin/fslmaths ${seg1} -mas \
+	# 		${subj_dir}/${ID}/mri/kNN_intermediateOutput/inv_${ID}_dartelFLAIR_accurateCSFmask \
+	# 		${subj_dir}/${ID}/mri/kNN_intermediateOutput/${ID}_accurateCSFmasked_seg1
+	# ${FSLDIR}/bin/fslmaths ${seg2} -mas \
+	# 		${subj_dir}/${ID}/mri/kNN_intermediateOutput/inv_${ID}_dartelFLAIR_accurateCSFmask \
+	# 		${subj_dir}/${ID}/mri/kNN_intermediateOutput/${ID}_accurateCSFmasked_seg2
+
+
+	### apply accurate CSF and WM masks (0.1 oatsAvgMask) (for the moment. may change after including manual training)
+
+	WMavgMaskBin_0_1="${pipPath}/Templates/OATS_averaged_probability_maps/oatsALL375whiteMatter4wmhProject_ventricleFilled_binarized_0_1.nii.gz"
+	# ${FSLDIR}/bin/fslmaths ${WM_avg_mask} -thr 0.6 -bin ${WMavgMaskBin_0_6}
+	${FSLDIR}/bin/fslmaths ${seg0} -mas \
+			${subj_dir}/${ID}/mri/kNN_intermediateOutput/inv_${ID}_dartelFLAIR_accurateCSFmask \
+			-mas ${WMavgMaskBin_0_1} \
+			${subj_dir}/${ID}/mri/kNN_intermediateOutput/${ID}_accurateCSFmasked_seg0
+	${FSLDIR}/bin/fslmaths ${seg1} -mas \
+			${subj_dir}/${ID}/mri/kNN_intermediateOutput/inv_${ID}_dartelFLAIR_accurateCSFmask \
+			-mas ${WMavgMaskBin_0_1} \
+			${subj_dir}/${ID}/mri/kNN_intermediateOutput/${ID}_accurateCSFmasked_seg1
+	${FSLDIR}/bin/fslmaths ${seg2} -mas \
+			${subj_dir}/${ID}/mri/kNN_intermediateOutput/inv_${ID}_dartelFLAIR_accurateCSFmask \
+			-mas ${WMavgMaskBin_0_1} \
+			${subj_dir}/${ID}/mri/kNN_intermediateOutput/${ID}_accurateCSFmasked_seg2
+}
+
+
+	
+# invoke the function
+# $1 = ID
+# $2 = subj_dir
+# $3 = pipelinePath
+
+WMHextraction_kNNdiscovery_Step1 $1 $2 $3
+#> "${2}/${1}/WMH/${1}.log"
+
+echo "***   Finished !   ***"
+	

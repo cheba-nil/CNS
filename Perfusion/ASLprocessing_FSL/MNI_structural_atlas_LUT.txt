@@ -1,0 +1,11 @@
+MNI_strctural
+
+MS1	caudate
+MS2	cerebellum
+MS3	frontal_lobe
+MS4	insula
+MS5	occipital_lobe
+MS6	parietal_lobe
+MS7	putamen
+MS8	temporal_lobe
+MS9	thalamus

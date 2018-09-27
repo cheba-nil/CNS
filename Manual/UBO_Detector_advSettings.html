@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+
+<h1>Advanced settings for WMH segmentation</h1>
+	<h2>DARTEL Template</h2>
+
+	<p>UBO Detector offers three options for DARTEL templates:</p>
+	<p><i>Existing templates for 65 to 75 years old</i> - The templates were generated from Older Australian Twins Study (OATS) with participants aged 65-75 years. The templates have been embedded in the release of UBO Detector.</p>
+	<p><i>Existing templates for 70 to 80 years old</i> - The templates were from Sydney Memory and Ageing Study (Sydney MAS) with older adults aged 70 to 80 years. The templates have been included in the release of UBO Detector.</p>
+	<p><i>Creating templates</i> - This option will generate sample-specific templates. This option will take longer time than the existing templates options.</p>
+
+	<h2>k for kNN</h2>
+	<p>The number of neighbours to search for in the n-dimension space, where n is the number of features. A 'k=5' works well from our experiences.</p>
+
+	<h2>kNN training set</h2>
+	<p>UBO Detector includes a built-in training set of manually selected WMH and non-WMH clusters from five Sydney MAS participants. A larger training set will be included in future release of UBO Detector.</p>
+
+	<h2>Probability threshold</h2>
+	<p>The output from the kNN step includes a probability map indicating the ratio of the number of the 'WMH' votes in the nearest k neighbours to k, the total number of neighbours involved in the voting. From our experiences, a probability threshold of 0.7 works well with k=5, i.e. in the five nearest neighbours, at least four voting ‘WMH’ indicates that the enquiry cluster is likely to be a WMH region.</p>
+
+	<p>
+		<a href="UBO_Detector_main.html">Back to UBO Detector manual</a>
+	</p>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<body>
+	<h1>Customise kNN Classifier</h1>
+	<p>In order to customize kNN classifier, the data need to go through standard WMH segmentation procedures using UBO Detector.</p>
+	<a><img src="UBO_Detector_Manual_Figures/UBO_Detector_Figure_5.png" WIDTH=700></a><br>
+
+	<p>Step 1: From CNS GUI, select <i style="background-color:DarkSeaGreen">WMH -> Customise kNN classifier</i></p>
+
+	<p>Step 2: Find the study folder by clicking <i style="background-color:DarkSeaGreen">Find Study Dir</i></p>
+
+	<p>Step 3: Specify the number of subjects that will be included in the training set.</p>
+
+	<p>Step 4: Specify whether you would like the number of WMH and non-WMH to be equal.</p>
+
+	<p>Step 5: Type in the ID for each subject that will be included in the training set.</p>
+
+	<p>Step 6: Press <i style="background-color:DarkSeaGreen">Rude Training</i>. From our experiences, after FSL FAST segmentation of FLAIR scans, the majority of WMH clusters are included in seg0. Therefore, by default, we preliminarily label all clusters in seg0 as WMH, and those in seg1 and seg2 as non-WMH.</p>
+
+	<p>Step 7: Choose to manually edit based on rude training results (i.e. with all seg0 clusters regarded as WMH), or WMH segmentation results using the built-in training set and classifier.</p>
+
+	<p>Step 8: Select one of the IDs from the specified training set, and click <i style="background-color:DarkSeaGreen">Start Visual Adjustment</i>. FSLVIEW will be started and load the WMH map/mask selected from Step 6, which is superimposed onto FLAIR image in DARTEL space. Edit the WMH mask using the editing tools available in FSLVIEW. After finishing editing, save the edited WMH mask, and close FSLVIEW. Please be noted that the left/right orientation may be swapped after each second save in FSLVIEW. Therefore, please try to edit the whole image and save once. </p>
+
+	<p>Step 9: Click <i style="background-color:DarkSeaGreen">Auto Modify Textfile</i>. </p>
+
+	<a><img src="UBO_Detector_Manual_Figures/UBO_Detector_Figure_6.png" WIDTH=400></a><br>
+
+
+	<p>Step 10: <i style="background-color:DarkSeaGreen">Find</i> manually edited WMH mask</p>
+
+	<p>Step 11: Specify the DARTEL template used for WMH segmentation carried out before customizing kNN classifier.</p>
+
+	<p>Step 12: Click <i style="background-color:DarkSeaGreen">Modify text for training</i>, and close the autoModTxt dialog after finishing.</p>
+
+	<p>Step 13: Repeat Step 8-12 for each of the training IDs.</p>
+
+	<p>Step 14: Click <i style="background-color:DarkSeaGreen">All Finished</i>.</p>
+
+	<p>Step 15: Click <i style="background-color:DarkSeaGreen">Go to Extract WMH with Customised Classifier</i>. Remember to select "customised" for kNN training set in UBO Detector.</p>
+
+	<p>
+		<a href="UBO_Detector_main.html">Back to UBO Detector manual</a>
+	</p>
+</body>
+</html>
