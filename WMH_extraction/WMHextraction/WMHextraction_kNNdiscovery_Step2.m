@@ -5,7 +5,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-function WMHextraction_kNNdiscovery_Step2 (k, ID, CNSP_path, studyFolder, classifier, dartelTemplate, ageRange, probThr, trainingFeatures1, trainingFeatures2, varargin)
+function WMHextraction_kNNdiscovery_Step2 (k, ID, CNSP_path, studyFolder, classifier, template, ageRange, probThr, trainingFeatures1, trainingFeatures2, varargin)
 
 switch classifier
     case 'built-in'
@@ -21,11 +21,11 @@ if exist (decision4training, 'file') == 2
         
         %% generate features for prediction
         if nargin == 10
-            generateFeatures_forPrediction (ID, [studyFolder '/subjects'], CNSP_path, dartelTemplate, ageRange);
+            generateFeatures_forPrediction (ID, [studyFolder '/subjects'], CNSP_path, template, ageRange);
         elseif (nargin >= 11) && strcmp(varargin{1},'noGenF')
             % no need to generate features
         elseif (nargin >= 11) && ~strcmp(varargin{1},'noGenF')
-            generateFeatures_forPrediction (ID, [studyFolder '/subjects'], CNSP_path, dartelTemplate, ageRange);
+            generateFeatures_forPrediction (ID, [studyFolder '/subjects'], CNSP_path, template, ageRange);
         end
 
 
