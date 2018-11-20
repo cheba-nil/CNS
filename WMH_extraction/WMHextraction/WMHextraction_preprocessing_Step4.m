@@ -7,7 +7,7 @@
 
 
 
-function WMHextraction_preprocessing_Step4 (studyFolder, dartelTemplate, coregExcldList, segExcldList, CNSP_path)
+function WMHextraction_preprocessing_Step4 (studyFolder, template, coregExcldList, segExcldList, CNSP_path)
 
     excldList = [coregExcldList ' ' segExcldList];
     excldIDs = strsplit (excldList, ' ');
@@ -34,7 +34,7 @@ function WMHextraction_preprocessing_Step4 (studyFolder, dartelTemplate, coregEx
             matlabbatch = [];   % preallocate to enable parfor
             spm_jobman('initcfg');
 
-            switch dartelTemplate
+            switch template.name
                 case 'existing template'
                     flowMap = strcat (studyFolder, '/subjects/', ID, '/mri/preprocessing/u_rc1', T1folder(i).name);
                 
@@ -71,7 +71,7 @@ function WMHextraction_preprocessing_Step4 (studyFolder, dartelTemplate, coregEx
     end
     
 
-    if strcmp (dartelTemplate,'creating template')
+    if strcmp (template.name,'creating template')
 
             % create studyFolder/subjects/cohort_probability_maps
             if exist([studyFolder '/subjects/cohort_probability_maps'],'dir') == 7
