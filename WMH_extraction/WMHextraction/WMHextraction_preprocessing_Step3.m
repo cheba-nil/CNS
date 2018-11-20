@@ -22,7 +22,7 @@ function WMHextraction_preprocessing_Step3 (studyFolder, ...
 
     spm('defaults', 'fmri');
     
-    switch dartelTemplate
+    switch dartelTemplate.name
         case 'existing template'
             existingTemplateDARTELrun (studyFolder, CNSP_path, coregExcldList, segExcldList, ageRange)
             
