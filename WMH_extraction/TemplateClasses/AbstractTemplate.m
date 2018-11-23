@@ -5,7 +5,7 @@
 % which inherits from AbstractTemplate
 % and fills out the specified properties
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-classdef (Abstract) AbstractTemplate
+classdef (Abstract) AbstractTemplate < handle
     properties (Abstract)
         % Name, for compatibility with legacy code
         name
