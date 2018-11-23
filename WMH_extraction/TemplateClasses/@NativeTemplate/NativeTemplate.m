@@ -1,13 +1,13 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% DartelTemplate.m
+% NativeTemplate.m
 % 
-% Constructor for DartelTemplate class : DartelTemplate(CNS_path, age_range); 
+% Constructor for NativeTemplate class : NativeTemplate(CNS_path, age_range); 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-classdef DartelTemplate < AbstractTemplate
+classdef NativeTemplate < AbstractTemplate & handle
     methods
-        function template = DartelTemplate(CNS_path, age_range);
-            template.name = 'existing template';
+        function template = NativeTemplate(CNS_path, age_range, studyFolder, subID);
+            template.name = 'native template';
 
             template.brain_mask = strcat( ...
                     CNS_path,'/Templates/DARTEL_brain_mask/', ...

@@ -6,8 +6,8 @@
 
 classdef DartelTemplate < AbstractTemplate
     methods
-        function template = DartelTemplate(subject_dir, age_range);
-            template.name = 'creating template'
+        function template = DartelTemplate(subject_dir);
+            template.name = 'creating template';
 
             template.brain_mask = strcat( ...
                     subject_dir,'/cohort_probability_maps/',...
