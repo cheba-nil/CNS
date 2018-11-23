@@ -1,50 +1,36 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % NativeTemplate.m
 % 
 % Constructor for NativeTemplate class : NativeTemplate(CNS_path, age_range); 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-classdef NativeTemplate < AbstractTemplate & handle
+classdef NativeTemplate < AbstractTemplate
     methods
         function template = NativeTemplate(CNS_path, age_range, studyFolder, subID);
+            template.CNS_path = CNS_path;
+            template.age_range = age_range;
+            template.studyFolder = studyFolder;
+            template.subID = subID;
+            template.dir = strcat(studyFolder,'/subjects/', ...
+                           subID,'/NativeTemplate')
+
             template.name = 'native template';
 
-            template.brain_mask = strcat( ...
-                    CNS_path,'/Templates/DARTEL_brain_mask/', ...
-                    age_range, '/DARTEL_brain_mask.nii.gz');
 
-            template.gm_prob = strcat( ...
-                    CNS_path,'/Templates/DARTEL_GM_WM_CSF_prob_maps/', ...
-                    age_range,'/DARTEL_GM_prob_map.nii.gz');
-            template.wm_prob = strcat( ...
-                    CNS_path,'/Templates/DARTEL_GM_WM_CSF_prob_maps/', ...
-                    age_range,'/DARTEL_WM_prob_map.nii.gz');
-            template.csf_prob = strcat( ...
-                    CNS_path,'/Templates/DARTEL_GM_WM_CSF_prob_maps/', ...
-                    age_range,'/DARTEL_CSF_prob_map.nii.gz');
 
-            template.gm_prob_thr = strcat( ...
-                    CNS_path,'/Templates/DARTEL_GM_WM_CSF_prob_maps/', ...
-                    age_range,'/DARTEL_GM_prob_map_thr0_8.nii.gz');
-            template.wm_prob_thr = strcat( ...
-                    CNS_path,'/Templates/DARTEL_GM_WM_CSF_prob_maps/', ...
-                    age_range,'/DARTEL_WM_prob_map_thr0_8.nii.gz');
-            template.csf_prob_thr = strcat( ...
-                    CNS_path,'/Templates/DARTEL_GM_WM_CSF_prob_maps/', ...
-                    age_range,'/DARTEL_CSF_prob_map_thr0_8.nii.gz');
-    
-            template.ventricles = strcat( ...
-                    CNS_path,'/Templates/DARTEL_ventricle_distance_map/', ...
-                    'DARTEL_ventricle_distance_map.nii.gz');
+            template.brain_mask = strcat(template.dir,'/rwbrain_mask.nii') 
 
-            template.lobar = strcat( ...
-                    CNS_path,'/Templates/DARTEL_lobar_and_aterial_templates/', ...
-                        'DARTEL_lobar_template.nii.gz');
-            template.arterial = strcat( ...
-                    CNS_path,'/Templates/DARTEL_lobar_and_aterial_templates/', ...
-                        'DARTEL_arterial_template.nii.gz');
+            template.gm_prob = strcat(template.dir,'/rwGM_prob_map.nii')
+            template.wm_prob = strcat(template.dir,'/rwWM_prob_map.nii') 
+            template.csf_prob = strcat(template.dir,'/rwCSF_prob_map.nii') 
 
-            template.space = 'DARTEL';
+            template.gm_prob_thr = strcat(template.dir,'/rwGM_prob_map_thr0_8.nii') 
+            template.wm_prob_thr = strcat(template.dir,'/rwWM_prob_map_thr0_8.nii') 
+            template.ventricles = strcat(template.dir,'/rwVentricle_distance_map.nii') 
+            template.lobar = strcat(template.dir,'/rwCSF_lobar.nii') 
+            template.arterial = strcat(template.dir,'/rwCSF_arterial.nii') 
+
+            template.space = 'FLAIR';
         end
     end
     properties
@@ -55,10 +41,14 @@ classdef NativeTemplate < AbstractTemplate & handle
         csf_prob
         gm_prob_thr
         wm_prob_thr
-        csf_prob_thr
         ventricles
         lobar
         arterial
         space
+        CNS_path
+        age_range
+        studyFolder
+        subID
+        dir
     end
 end

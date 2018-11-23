@@ -21,7 +21,6 @@ classdef (Abstract) AbstractTemplate < handle
         % Thresholded (p >= 0.8) Probability Maps
         gm_prob_thr
         wm_prob_thr
-        csf_prob_thr
 
         % Ventricle Distance
         ventricles

@@ -2,67 +2,143 @@
 % generate.m
 %
 % This function will warp the indicated Dartel template into native space.
-% It requires rc(1-3)(subID)_T1.nii to have been created already 
+% It requires rc(1-3)(obj.subID)_T1.nii to have been created already 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function generate(obj, CNS_path, age_range, studyFolder, subID);
+function generate(obj);
     
     % first setup the required folders
-    templateDir = strcat(studyFolder,'/subjects/',subID,'/NativeTemplate');
-    mkdir templateDir;
+    mkdir(obj.dir);
 
     % this little hack is required for now to get the 
     % DARTEL template into native space
-    dtemplate = DartelTemplate(CNS_path, age_range);
-    WMHextraction_preprocessing_Step3(studyFolder,CNS_path,dtemplate,'','',ageRange);
+    dtemplate = DartelTemplate(obj.CNS_path, obj.age_range);
+    WMHextraction_preprocessing_Step3(obj.studyFolder,obj.CNS_path, ... 
+                                      dtemplate,'','',obj.age_range);
 
     % and move the warp to our template directory
-    warpfile = strcat('u_rc1',subID,'_T1.nii')
-    movefile strcat(studyFolder,'/subjects/',subID,...
-                    '/mri/preprocessing/',warpfile)
+    warpfile = strcat('u_rc1',obj.subID,'_T1.nii');
+    movefile(strcat(obj.studyFolder,'/subjects/',obj.subID,...
+                    '/mri/preprocessing/',warpfile), ...
+             strcat(obj.dir,'/',warpfile));
+ 
+    % unzip into our template directory
+    gunzip(dtemplate.brain_mask,obj.dir);
+    gunzip(dtemplate.gm_prob,obj.dir);
+    gunzip(dtemplate.wm_prob,obj.dir);
+    gunzip(dtemplate.csf_prob,obj.dir);
+    gunzip(dtemplate.gm_prob_thr,obj.dir);
+    gunzip(dtemplate.wm_prob_thr,obj.dir);
+    gunzip(dtemplate.ventricles,obj.dir);
+    gunzip(dtemplate.lobar,obj.dir);
+    gunzip(dtemplate.arterial,obj.dir);
 
-    % set our paths ...
+    % set variables pointing to the unzipped masks in the template folder
     brain_mask = strcat( ...
-            CNS_path,'/Templates/DARTEL_brain_mask/', ...
-            age_range, '/DARTEL_brain_mask.nii.gz');
+            obj.dir, '/DARTEL_brain_mask.nii');
     gm_prob = strcat( ...
-            CNS_path,'/Templates/DARTEL_GM_WM_CSF_prob_maps/', ...
-            age_range,'/DARTEL_GM_prob_map.nii.gz');
+            obj.dir,'/DARTEL_GM_prob_map.nii');
     wm_prob = strcat( ...
-            CNS_path,'/Templates/DARTEL_GM_WM_CSF_prob_maps/', ...
-            age_range,'/DARTEL_WM_prob_map.nii.gz');
+            obj.dir,'/DARTEL_WM_prob_map.nii');
     csf_prob = strcat( ...
-            CNS_path,'/Templates/DARTEL_GM_WM_CSF_prob_maps/', ...
-            age_range,'/DARTEL_CSF_prob_map.nii.gz');
+            obj.dir,'/DARTEL_CSF_prob_map.nii');
     gm_prob_thr = strcat( ...
-            CNS_path,'/Templates/DARTEL_GM_WM_CSF_prob_maps/', ...
-            age_range,'/DARTEL_GM_prob_map_thr0_8.nii.gz');
+            obj.dir,'/DARTEL_GM_prob_map_thr0_8.nii');
     wm_prob_thr = strcat( ...
-            CNS_path,'/Templates/DARTEL_GM_WM_CSF_prob_maps/', ...
-            age_range,'/DARTEL_WM_prob_map_thr0_8.nii.gz');
-    csf_prob_thr = strcat( ...
-            CNS_path,'/Templates/DARTEL_GM_WM_CSF_prob_maps/', ...
-            age_range,'/DARTEL_CSF_prob_map_thr0_8.nii.gz');
+            obj.dir,'/DARTEL_WM_prob_map_thr0_8.nii');
     ventricles = strcat( ...
-            CNS_path,'/Templates/DARTEL_ventricle_distance_map/', ...
-            'DARTEL_ventricle_distance_map.nii.gz');
+            obj.dir,'/DARTEL_ventricle_distance_map.nii');
     lobar = strcat( ...
-            CNS_path,'/Templates/DARTEL_lobar_and_aterial_/', ...
-                'DARTEL_lobar_nii.gz');
+            obj.dir, '/DARTEL_lobar_template.nii');
     arterial = strcat( ...
-            CNS_path,'/Templates/DARTEL_lobar_and_aterial_/', ...
-                'DARTEL_arterial_nii.gz');
-
-    % now apply the warp to each of the necessary template files
-    CNSP_DARTELtoNative(brain_mask,strcat(templateDir,'/',warpfile)
-    CNSP_DARTELtoNative(gm_prob,strcat(templateDir,'/',warpfile)
-    CNSP_DARTELtoNative(wm_prob,strcat(templateDir,'/',warpfile)
-    CNSP_DARTELtoNative(csf_prob,strcat(templateDir,'/',warpfile)
-    CNSP_DARTELtoNative(gm_prob_thr,strcat(templateDir,'/',warpfile)
-    CNSP_DARTELtoNative(wm_prob_thr,strcat(templateDir,'/',warpfile)
-    CNSP_DARTELtoNative(csf_prob_thr,strcat(templateDir,'/',warpfile)
-    CNSP_DARTELtoNative(ventricles,strcat(templateDir,'/',warpfile)
-    CNSP_DARTELtoNative(lobar,strcat(templateDir,'/',warpfile)
-    CNSP_DARTELtoNative(arterial,strcat(templateDir,'/',warpfile)
+            obj.dir,'/DARTEL_arterial_template.nii');
 
 
+    % now apply the warp to each of the template files
+    fn_wbrain_mask = CNSP_DARTELtoNative( ... 
+            brain_mask,strcat(obj.dir,'/',warpfile));
+    fn_wgm_prob = CNSP_DARTELtoNative( ... 
+            gm_prob,strcat(obj.dir,'/',warpfile));
+    fn_wwm_prob = CNSP_DARTELtoNative( ...
+            wm_prob,strcat(obj.dir,'/',warpfile));
+    fn_wcsf_prob = CNSP_DARTELtoNative( ... 
+            csf_prob,strcat(obj.dir,'/',warpfile));
+    fn_wgm_prob_thr = CNSP_DARTELtoNative( ...
+            gm_prob_thr,strcat(obj.dir,'/',warpfile));
+    fn_wwm_prob_thr = CNSP_DARTELtoNative( ...
+            wm_prob_thr,strcat(obj.dir,'/',warpfile));
+    fn_wventricles = CNSP_DARTELtoNative( ... 
+            ventricles,strcat(obj.dir,'/',warpfile));
+    fn_wlobar = CNSP_DARTELtoNative( ... 
+            lobar,strcat(obj.dir,'/',warpfile));
+    fn_warterial = CNSP_DARTELtoNative( ... 
+            arterial,strcat(obj.dir,'/',warpfile));
+
+    % remove the old unziped files
+    delete(brain_mask)
+    delete(gm_prob)
+    delete(wm_prob)
+    delete(csf_prob)
+    delete(gm_prob_thr)
+    delete(wm_prob_thr)
+    delete(ventricles)
+    delete(lobar)
+    delete(arterial)
+
+    % set some variables
+    wbrain_mask = strcat(obj.dir,'/wbrain_mask.nii');
+    wgm_prob = strcat(obj.dir,'/wGM_prob_map.nii');
+    wwm_prob = strcat(obj.dir,'/wWM_prob_map.nii');
+    wcsf_prob = strcat(obj.dir,'/wCSF_prob_map.nii'); 
+    wgm_prob_thr = strcat(obj.dir,'/wGM_prob_map_thr0_8.nii'); 
+    wwm_prob_thr = strcat(obj.dir,'/wWM_prob_map_thr0_8.nii') 
+    wventricles = strcat(obj.dir,'/wVentricle_distance_map.nii'); 
+    wlobar = strcat(obj.dir,'/wCSF_lobar.nii'); 
+    warterial = strcat(obj.dir,'/wCSF_arterial.nii') 
+
+    % rename
+    movefile(fn_wbrain_mask,wbrain_mask)
+    movefile(fn_wgm_prob,wgm_prob)
+    movefile(fn_wwm_prob,wwm_prob)
+    movefile(fn_wcsf_prob,wcsf_prob)
+    movefile(fn_wgm_prob_thr,wgm_prob_thr)
+    movefile(fn_wwm_prob_thr,wwm_prob_thr)
+    movefile(fn_wventricles,wventricles)
+    movefile(fn_wlobar,wlobar)
+    movefile(fn_warterial,warterial)
+
+    % get c1 into flair dimensions
+    flair = strcat(obj.studyFolder,'/subjects/',obj.subID,...
+                    '/mri/orig/',obj.subID,'_FLAIR.nii'); ...
+    orig_rflair = strcat(obj.studyFolder,'/subjects/',obj.subID,...
+                    '/mri/preprocessing/r',obj.subID,'_FLAIR.nii');
+    rflair = strcat(obj.dir,'/r',obj.subID,'_FLAIR.nii');
+    copyfile(orig_rflair,rflair)
+
+    orig_c1 = strcat(obj.studyFolder,'/subjects/',obj.subID,...
+                    '/mri/preprocessing/c1',obj.subID,'_T1.nii');
+    c1 = strcat(obj.dir,'/c1',obj.subID,'_T1.nii');
+    copyfile(orig_c1,c1);
+
+
+    fc1 = strcat(obj.dir,'/fc1',obj.subID,'_T1.nii');
+        
+    CNSP_registration(rflair,flair,obj.dir,c1)
+    movefile(strcat(templdateDir,'/rc1',obj.subID,'_T1.nii'),fc1)
+
+    % this must be done after the movefile on the previous line
+    % or else spm will overwrite rc1
+    orig_rc1 = strcat(obj.studyFolder,'/subjects/',obj.subID,...
+                    '/mri/preprocessing/rc1',obj.subID,'_T1.nii');
+    rc1 = strcat(obj.dir,'/rc1',obj.subID,'_T1.nii');
+    copyfile(orig_rc1,rc1);
+    
+    CNSP_registration(rc1,fc1,obj.dir,obj.brain_mask)
+    CNSP_registration(rc1,fc1,obj.dir,obj.gm_prob)
+    CNSP_registration(rc1,fc1,obj.dir,obj.wm_prob)
+    CNSP_registration(rc1,fc1,obj.dir,obj.csf_prob)
+    CNSP_registration(rc1,fc1,obj.dir,obj.gm_prob_thr)
+    CNSP_registration(rc1,fc1,obj.dir,obj.wm_prob_thr)
+    CNSP_registration(rc1,fc1,obj.dir,obj.ventricles)
+    CNSP_registration(rc1,fc1,obj.dir,obj.lobar)
+    CNSP_registration(rc1,fc1,obj.dir,obj.arterial)
