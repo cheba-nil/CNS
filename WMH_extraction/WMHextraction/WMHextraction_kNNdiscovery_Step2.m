@@ -5,15 +5,15 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-function WMHextraction_kNNdiscovery_Step2 (k, ID, CNSP_path, studyFolder, classifier, template, ageRange, probThr, trainingFeatures1, trainingFeatures2, varargin)
+function WMHextraction_kNNdiscovery_Step2 (k, ID, classifier, template, probThr, trainingFeatures1, trainingFeatures2, varargin)
 
 switch classifier
     case 'built-in'
-        feature4training = strcat (CNSP_path, '/WMH_extraction/4kNN_classifier/feature_forTraining.txt');
-        decision4training = strcat (CNSP_path, '/WMH_extraction/4kNN_classifier/decision_forTraining.txt');
+        feature4training = strcat (template.CNS_path, '/WMH_extraction/4kNN_classifier/feature_forTraining.txt');
+        decision4training = strcat (template.CNS_path, '/WMH_extraction/4kNN_classifier/decision_forTraining.txt');
     case 'customised'
-        feature4training = [studyFolder '/customiseClassifier/textfiles/feature_forTraining.txt'];
-        decision4training = [studyFolder '/customiseClassifier/textfiles/decision_forTraining.txt'];
+        feature4training = [template.studyFolder '/customiseClassifier/textfiles/feature_forTraining.txt'];
+        decision4training = [template.studyFolder '/customiseClassifier/textfiles/decision_forTraining.txt'];
 end
 
 if exist (decision4training, 'file') == 2
@@ -21,11 +21,11 @@ if exist (decision4training, 'file') == 2
         
         %% generate features for prediction
         if nargin == 10
-            generateFeatures_forPrediction (ID, [studyFolder '/subjects'], CNSP_path, template, ageRange);
+            generateFeatures_forPrediction (ID, [template.studyFolder '/subjects'], template.CNS_path, template);
         elseif (nargin >= 11) && strcmp(varargin{1},'noGenF')
             % no need to generate features
         elseif (nargin >= 11) && ~strcmp(varargin{1},'noGenF')
-            generateFeatures_forPrediction (ID, [studyFolder '/subjects'], CNSP_path, template, ageRange);
+            generateFeatures_forPrediction (ID, [template.studyFolder '/subjects'], template.CNS_path, template);
         end
 
 
@@ -48,16 +48,16 @@ if exist (decision4training, 'file') == 2
         fprintf('UBO Detector: cross-validation loss of the kNN model is %1.4f\n',kloss);
 
         %% predict
-        predictionTBL_path = [studyFolder '/subjects/' ID '/mri/extractedWMH/temp/' ID '_feature_4prediction.txt'];
+        predictionTBL_path = [template.studyFolder '/subjects/' ID '/mri/extractedWMH/temp/' ID '_feature_4prediction.txt'];
         predictionTBL = importdata(predictionTBL_path, ' ');
 %         [label, score, cost] = predict (kNN_mdl, predictionTBL);
         [label, score, cost] = predict (int_kNN_mdl, predictionTBL(:,trainingFeatures1));
         
 
         %% saved seg012 clusters with label ID
-        seg0_lablID_struct = load_nii ([studyFolder '/subjects/' ID '/mri/extractedWMH/temp/' ID '_seg0.nii']);
-        seg1_lablID_struct = load_nii ([studyFolder '/subjects/' ID '/mri/extractedWMH/temp/' ID '_seg1.nii']);
-        seg2_lablID_struct = load_nii ([studyFolder '/subjects/' ID '/mri/extractedWMH/temp/' ID '_seg2.nii']);
+        seg0_lablID_struct = load_nii ([template.studyFolder '/subjects/' ID '/mri/extractedWMH/temp/' ID '_seg0.nii']);
+        seg1_lablID_struct = load_nii ([template.studyFolder '/subjects/' ID '/mri/extractedWMH/temp/' ID '_seg1.nii']);
+        seg2_lablID_struct = load_nii ([template.studyFolder '/subjects/' ID '/mri/extractedWMH/temp/' ID '_seg2.nii']);
         
         seg0_lablID = seg0_lablID_struct.img;
         seg1_lablID = seg1_lablID_struct.img;
@@ -95,7 +95,7 @@ if exist (decision4training, 'file') == 2
 %         label_cell {3} = label ((seg0_max+seg1_max+1):(seg0_max+seg1_max+seg2_max));
 %         
 %         %--- WM prob map
-%         %         WMprobMap_struct = load_nii ([CNSP_path '/Templates/DARTEL_GM_WM_CSF_prob_maps/65to75/DARTEL_WM_prob_map.nii.gz']);
+%         %         WMprobMap_struct = load_nii ([template.CNS_path '/Templates/DARTEL_GM_WM_CSF_prob_maps/65to75/DARTEL_WM_prob_map.nii.gz']);
 %         %         WMprobMap = cast (WMprobMap_struct.img,'double');
 %         for a = 1:3
 %             for b = 1:seg012_max(1,a)
@@ -113,7 +113,7 @@ if exist (decision4training, 'file') == 2
 %         end
 %         
 %         seg012_label_img = seg012_combined4D_label(:,:,:,1) + seg012_combined4D_label(:,:,:,2) + seg012_combined4D_label(:,:,:,3);
-%         save_nii(make_nii (seg012_label_img), [studyFolder '/subjects/' ID '/mri/extractedWMH/' ID '_WMH_LablMap.nii']);
+%         save_nii(make_nii (seg012_label_img), [template.studyFolder '/subjects/' ID '/mri/extractedWMH/' ID '_WMH_LablMap.nii']);
                         
                         
         %% probability map
@@ -134,7 +134,7 @@ if exist (decision4training, 'file') == 2
         end     
         
         seg012_score_img = seg012_combined4D_score(:,:,:,1) + seg012_combined4D_score(:,:,:,2) + seg012_combined4D_score(:,:,:,3);
-        save_nii(make_nii (seg012_score_img), [studyFolder '/subjects/' ID '/mri/extractedWMH/' ID '_WMH_ProbMap.nii']);
+        save_nii(make_nii (seg012_score_img), [template.studyFolder '/subjects/' ID '/mri/extractedWMH/' ID '_WMH_ProbMap.nii']);
         
         clear seg012_combined4D_score;
         
@@ -148,7 +148,7 @@ if exist (decision4training, 'file') == 2
         thresholded_probMap (thresholded_probMap > probThr) = 1;
         probThr = sprintf ('%1.2f', probThr); % two decimals
         probThr_parts = strsplit (probThr, '.');
-        save_nii (make_nii (thresholded_probMap), [studyFolder '/subjects/' ID '/mri/extractedWMH/' ID '_WMH_Prob' probThr_parts{1} '_' probThr_parts{2} '.nii']);
+        save_nii (make_nii (thresholded_probMap), [template.studyFolder '/subjects/' ID '/mri/extractedWMH/' ID '_WMH_Prob' probThr_parts{1} '_' probThr_parts{2} '.nii']);
         
 
         %% number of focal incidences count
@@ -164,11 +164,11 @@ if exist (decision4training, 'file') == 2
         %% Refinement with specified ProbThr
 %         fprintf (['Generating WMH map with specified probability threshold and refinement applied for ' ID ' ...\n']);
 %         if (nargin == 10) || ((nargin == 11) && strcmp(varargin{1}, 'noGenF'))
-%             [secondKNNlabel,secondKNNscore] = WMHextraction_postprocessing_refinement (studyFolder,ID,label,feature4training,decision4training, k, trainingFeatures2);
+%             [secondKNNlabel,secondKNNscore] = WMHextraction_postprocessing_refinement (template.studyFolder,ID,label,feature4training,decision4training, k, trainingFeatures2);
 %         elseif nargin > 11 && strcmp(varargin{1}, 'noGenF')
-%             [secondKNNlabel,secondKNNscore] = WMHextraction_postprocessing_refinement (studyFolder,ID,label,feature4training,decision4training, k, trainingFeatures2, varargin{2:end});  % same setting as the first kNN
+%             [secondKNNlabel,secondKNNscore] = WMHextraction_postprocessing_refinement (template.studyFolder,ID,label,feature4training,decision4training, k, trainingFeatures2, varargin{2:end});  % same setting as the first kNN
 %         elseif nargin > 10 && ~strcmp(varargin{1}, 'noGenF')
-%             [secondKNNlabel,secondKNNscore] = WMHextraction_postprocessing_refinement (studyFolder,ID,label,feature4training,decision4training, k, trainingFeatures2, varargin{:});
+%             [secondKNNlabel,secondKNNscore] = WMHextraction_postprocessing_refinement (template.studyFolder,ID,label,feature4training,decision4training, k, trainingFeatures2, varargin{:});
 %         end
 %             
 %         label_cell_refined {1} = secondKNNlabel (1:seg0_max);
@@ -198,9 +198,9 @@ if exist (decision4training, 'file') == 2
 % %         size (secondKNNlabel)
 %         % seg012_label_img_refined = seg012_label_img_refined .* thresholded_probMap;
 % %         save_nii(make_nii (seg012_label_img_refined),...
-% %                             [studyFolder '/subjects/' ID '/mri/extractedWMH/' ID '_WMH_Prob' probThr_parts{1} '_' probThr_parts{2} '_refined.nii']); 
+% %                             [template.studyFolder '/subjects/' ID '/mri/extractedWMH/' ID '_WMH_Prob' probThr_parts{1} '_' probThr_parts{2} '_refined.nii']); 
 %         save_nii(make_nii (seg012_label_img_refined),...
-%                             [studyFolder '/subjects/' ID '/mri/extractedWMH/' ID '_WMH_refinementKNN.nii']); 
+%                             [template.studyFolder '/subjects/' ID '/mri/extractedWMH/' ID '_WMH_refinementKNN.nii']); 
         
         
         
