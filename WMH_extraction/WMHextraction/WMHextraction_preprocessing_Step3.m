@@ -25,7 +25,6 @@ function WMHextraction_preprocessing_Step3 (studyFolder, ...
     switch dartelTemplate.name
         case 'existing template'
             existingTemplateDARTELrun (studyFolder, CNSP_path, coregExcldList, segExcldList, ageRange)
-            
         case 'creating template'
             creatingTemplateDARTELrun (studyFolder, coregExcldList, segExcldList);
         case 'native template'
@@ -33,7 +32,7 @@ function WMHextraction_preprocessing_Step3 (studyFolder, ...
     end
     
 function nativeTemplateRun(template,coregExcldList,segExcldList)
-    T1folder = dir (strcat (studyFolder,'/originalImg/T1/*.nii'));
+    T1folder = dir (strcat (template.studyFolder,'/originalImg/T1/*.nii'));
     [Nsubj,n] = size (T1folder);
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -54,6 +53,8 @@ function nativeTemplateRun(template,coregExcldList,segExcldList)
 
         if ismember(ID, excldIDs) == 0
             subtemp.generate()
+        end
+    end
 
 
     
