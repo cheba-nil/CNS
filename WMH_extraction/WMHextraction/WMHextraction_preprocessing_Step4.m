@@ -36,7 +36,7 @@ function WMHextraction_preprocessing_Step4 (studyFolder, template, coregExcldLis
             spm_jobman('initcfg');
             
             % We need to do something different if we are to process in native space
-            if strcmp(template.name, 'native template' 
+            if strcmp(template.name, 'native template')
                 % set the subtemp's ID
                 subtemp.subID = i
                 % Need to copy the flair image to preproc
