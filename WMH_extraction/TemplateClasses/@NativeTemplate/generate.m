@@ -10,11 +10,22 @@ function generate(obj);
     % first setup the required folders
     mkdir(obj.dir);
 
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % UGLY CODE ALERT:
+    % The following code chunk has been moved to the
+    % native template section withing Step3
+    % to avoid each subject being processed multiple times
+    % as a result TAKE NOTE OF THE FOLLOWING LINE:
+    % preproc_Step3 must be called for the DARTEL template
+    % before a native template can be established 
+    % FOR ANY OF THE SUBJECTS
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % this little hack is required for now to get the 
     % DARTEL template into native space
     dtemplate = DartelTemplate(obj.CNS_path, obj.age_range);
-    WMHextraction_preprocessing_Step3(obj.studyFolder,obj.CNS_path, ... 
-                                      dtemplate,'','',obj.age_range);
+    %WMHextraction_preprocessing_Step3(obj.studyFolder,obj.CNS_path, ... 
+    %                                  dtemplate,'','',obj.age_range);
 
     % and move the warp to our template directory
     warpfile = strcat('u_rc1',obj.subID,'_T1.nii');
@@ -91,10 +102,10 @@ function generate(obj);
     wwm_prob = strcat(obj.dir,'/wWM_prob_map.nii');
     wcsf_prob = strcat(obj.dir,'/wCSF_prob_map.nii'); 
     wgm_prob_thr = strcat(obj.dir,'/wGM_prob_map_thr0_8.nii'); 
-    wwm_prob_thr = strcat(obj.dir,'/wWM_prob_map_thr0_8.nii') 
+    wwm_prob_thr = strcat(obj.dir,'/wWM_prob_map_thr0_8.nii');
     wventricles = strcat(obj.dir,'/wVentricle_distance_map.nii'); 
     wlobar = strcat(obj.dir,'/wCSF_lobar.nii'); 
-    warterial = strcat(obj.dir,'/wCSF_arterial.nii') 
+    warterial = strcat(obj.dir,'/wCSF_arterial.nii');
 
     % rename
     movefile(fn_wbrain_mask,wbrain_mask)
@@ -124,7 +135,7 @@ function generate(obj);
     fc1 = strcat(obj.dir,'/fc1',obj.subID,'_T1.nii');
         
     CNSP_registration(rflair,flair,obj.dir,c1)
-    movefile(strcat(templdateDir,'/rc1',obj.subID,'_T1.nii'),fc1)
+    movefile(strcat(obj.dir,'/rc1',obj.subID,'_T1.nii'),fc1)
 
     % this must be done after the movefile on the previous line
     % or else spm will overwrite rc1
@@ -133,12 +144,12 @@ function generate(obj);
     rc1 = strcat(obj.dir,'/rc1',obj.subID,'_T1.nii');
     copyfile(orig_rc1,rc1);
     
-    CNSP_registration(rc1,fc1,obj.dir,obj.brain_mask)
-    CNSP_registration(rc1,fc1,obj.dir,obj.gm_prob)
-    CNSP_registration(rc1,fc1,obj.dir,obj.wm_prob)
-    CNSP_registration(rc1,fc1,obj.dir,obj.csf_prob)
-    CNSP_registration(rc1,fc1,obj.dir,obj.gm_prob_thr)
-    CNSP_registration(rc1,fc1,obj.dir,obj.wm_prob_thr)
-    CNSP_registration(rc1,fc1,obj.dir,obj.ventricles)
-    CNSP_registration(rc1,fc1,obj.dir,obj.lobar)
-    CNSP_registration(rc1,fc1,obj.dir,obj.arterial)
+    CNSP_registration(rc1,fc1,obj.dir,wbrain_mask)
+    CNSP_registration(rc1,fc1,obj.dir,wgm_prob)
+    CNSP_registration(rc1,fc1,obj.dir,wwm_prob)
+    CNSP_registration(rc1,fc1,obj.dir,wcsf_prob)
+    CNSP_registration(rc1,fc1,obj.dir,wgm_prob_thr)
+    CNSP_registration(rc1,fc1,obj.dir,wwm_prob_thr)
+    CNSP_registration(rc1,fc1,obj.dir,wventricles)
+    CNSP_registration(rc1,fc1,obj.dir,wlobar)
+    CNSP_registration(rc1,fc1,obj.dir,warterial)

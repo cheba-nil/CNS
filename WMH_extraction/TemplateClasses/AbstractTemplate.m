@@ -5,7 +5,7 @@
 % which inherits from AbstractTemplate
 % and fills out the specified properties
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-classdef (Abstract) AbstractTemplate < handle
+classdef (Abstract) AbstractTemplate < matlab.mixin.Copyable
     properties (Abstract)
         % Name, for compatibility with legacy code
         name

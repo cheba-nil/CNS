@@ -6,35 +6,72 @@
 
 classdef NativeTemplate < AbstractTemplate
     methods
-        function template = NativeTemplate(CNS_path, age_range, studyFolder, subID);
-            template.CNS_path = CNS_path;
-            template.age_range = age_range;
-            template.studyFolder = studyFolder;
-            template.subID = subID;
-            template.dir = strcat(studyFolder,'/subjects/', ...
-                           subID,'/NativeTemplate')
-
-            template.name = 'native template';
-
-
-
-            template.brain_mask = strcat(template.dir,'/rwbrain_mask.nii') 
-
-            template.gm_prob = strcat(template.dir,'/rwGM_prob_map.nii')
-            template.wm_prob = strcat(template.dir,'/rwWM_prob_map.nii') 
-            template.csf_prob = strcat(template.dir,'/rwCSF_prob_map.nii') 
-
-            template.gm_prob_thr = strcat(template.dir,'/rwGM_prob_map_thr0_8.nii') 
-            template.wm_prob_thr = strcat(template.dir,'/rwWM_prob_map_thr0_8.nii') 
-            template.ventricles = strcat(template.dir,'/rwVentricle_distance_map.nii') 
-            template.lobar = strcat(template.dir,'/rwCSF_lobar.nii') 
-            template.arterial = strcat(template.dir,'/rwCSF_arterial.nii') 
-
-            template.space = 'FLAIR';
+        function obj = NativeTemplate(CNS_path, age_range, studyFolder);
+            obj.CNS_path = CNS_path;
+            obj.age_range = age_range;
+            obj.studyFolder = studyFolder;
+            obj.name = 'native template';
+            obj.space = 'FLAIR';
+            obj.subID = '';
         end
+
+        function obj = set.subID(obj,i)
+            T1folder = dir (strcat (obj.studyFolder,'/originalImg/T1/*.nii'));
+            T1imgNames = strsplit (T1folder(i).name, '_');
+            obj.subID = T1imgNames{1};
+        end
+
+        function value = get.dir(obj)
+            value = strcat(obj.studyFolder,'/subjects/', ...
+                           obj.subID,'/NativeTemplate');
+        end
+
+        function value = get.brain_mask(obj)
+            value = strcat(obj.dir,'/rwbrain_mask.nii');
+        end
+
+        function value = get.gm_prob(obj)
+            value = strcat(obj.dir,'/rwGM_prob_map.nii');
+        end
+
+        function value = get.wm_prob(obj)
+            value = strcat(obj.dir,'/rwWM_prob_map.nii'); 
+        end
+
+        function value = get.csf_prob(obj)
+            value = strcat(obj.dir,'/rwCSF_prob_map.nii'); 
+        end
+
+        function value = get.gm_prob_thr(obj)
+            value = strcat(obj.dir,'/rwGM_prob_map_thr0_8.nii'); 
+        end
+    
+        function value = get.wm_prob_thr(obj)
+            value = strcat(obj.dir,'/rwWM_prob_map_thr0_8.nii'); 
+        end
+
+        function value = get.ventricles(obj)
+            value = strcat(obj.dir,'/rwVentricle_distance_map.nii'); 
+        end
+
+        function value = get.lobar(obj)
+            value = strcat(obj.dir,'/rwCSF_lobar.nii'); 
+        end
+
+        function value = get.arterial(obj)
+            value = strcat(obj.dir,'/rwCSF_arterial.nii'); 
+        end
+
     end
     properties
         name
+        space
+        CNS_path
+        age_range
+        studyFolder
+        subID
+    end
+    properties (Dependent)
         brain_mask
         gm_prob
         wm_prob
@@ -44,11 +81,6 @@ classdef NativeTemplate < AbstractTemplate
         ventricles
         lobar
         arterial
-        space
-        CNS_path
-        age_range
-        studyFolder
-        subID
         dir
     end
 end
