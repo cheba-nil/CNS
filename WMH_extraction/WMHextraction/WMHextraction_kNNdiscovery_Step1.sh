@@ -22,11 +22,10 @@ WMHextraction_kNNdiscovery_Step1(){
 	## read the second input as subj_dir
 	subj_dir=$2
 
-	CNSP_path=$3
+	wm_0_8_mask=$3
 
 	DARTELtemplate=$4
 
-	ageRange=$5
 
 	## set directory
 	seg0="${subj_dir}/${ID}/mri/preprocessing/FAST_nonBrainRemoved_wr${ID}_*_seg_0.nii*"
@@ -37,13 +36,11 @@ WMHextraction_kNNdiscovery_Step1(){
 
 	dartelFLAIR=`ls ${subj_dir}/${ID}/mri/preprocessing/FAST_nonBrainRemoved_wr${ID}_*_restore.nii*`
 
-	if [ "${DARTELtemplate}" = "existing_template" ]; then
-		wm_0_8_mask="${CNSP_path}/Templates/DARTEL_GM_WM_CSF_prob_maps/${ageRange}/DARTEL_WM_prob_map_thr0_8_bin.nii.gz"
-	elif [ "${DARTELtemplate}" = "creating_template" ]; then
+    # need to create a threshold map ...
+	if [ "${DARTELtemplate}" = "creating_template" ]; then
 		${FSLDIR}/bin/fslmaths ${subj_dir}/cohort_probability_maps/cohort_WM_probability_map_thr0_8 \
 								-bin \
 								${subj_dir}/cohort_probability_maps/cohort_WM_probability_map_thr0_8_bin
-		wm_0_8_mask="${subj_dir}/cohort_probability_maps/cohort_WM_probability_map_thr0_8_bin.nii.gz"
 	fi
 		
 
@@ -184,8 +181,7 @@ WMHextraction_kNNdiscovery_Step1(){
 # invoke the function
 # $1 = ID
 # $2 = subj_dir
-# $3 = CNSP path
-# $4 = DARTEL template
-# $5 = age range
+# $3 = wm_prob_thr
+# $4 = template name
 
-WMHextraction_kNNdiscovery_Step1 $1 $2 $3 $4 $5
+WMHextraction_kNNdiscovery_Step1 $1 $2 $3 $4
