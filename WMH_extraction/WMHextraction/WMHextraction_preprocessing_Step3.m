@@ -42,6 +42,9 @@ function nativeTemplateRun(template,coregExcldList,segExcldList)
     dtemplate = DartelTemplate(template.CNS_path, template.age_range);
     WMHextraction_preprocessing_Step3(template.studyFolder,template.CNS_path, ...
                                       dtemplate,coregExcldList,segExcldList,template.age_range);
+
+    excldList = [coregExcldList ' ' segExcldList];
+    excldIDs = strsplit (excldList, ' ');
     
     % generate a template foreach subject
     parfor i = 1:Nsubj
