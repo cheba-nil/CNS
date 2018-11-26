@@ -30,6 +30,12 @@ WMHextraction_kNNdiscovery_Step3(){
 	# echo "Here --== $probThr_str ==--"
 	# probThr_str=`echo $(printf '%1.2f' $5) | sed 's/\./_/g'`
 
+    # template masks
+    wm_prob_thr="$6"
+    ventricle_mask="$7"
+    lobar_mask="$8"
+    arterial_mask="$9"
+
 	# change predicted_WMH_clusters_ProbThr0_5.nii to predicted_WMH_clusters_ProbThr0_5.nii.gz
 	# change ProbMap.nii to ProbMap.nii.gz
 	if [ -f ${subj_dir}/${ID}/mri/extractedWMH/${ID}_WMH_LablMap.nii.gz ]; then
@@ -111,7 +117,7 @@ WMHextraction_kNNdiscovery_Step3(){
 
 	# build periventricle mask
 	${FSLDIR}/bin/fslmaths \
-		$(dirname ${pipelinePath})/Templates/DARTEL_ventricle_distance_map/DARTEL_ventricle_distance_map \
+        $ventricle_mask \
 		 -uthr ${PVmag} \
 		 -bin \
 		 -fillh \
@@ -150,7 +156,7 @@ WMHextraction_kNNdiscovery_Step3(){
 	# segment nonPVWMH into lobes, cerebellum, and brainstem WMH
 	# all in one image
 	${FSLDIR}/bin/fslmaths ${subj_dir}/${ID}/mri/extractedWMH/${ID}_nonPVWMH \
-							-mul $(dirname ${pipelinePath})/Templates/DARTEL_lobar_and_arterial_templates/DARTEL_lobar_template \
+                            -mul $lobar_mask \
 							${subj_dir}/${ID}/mri/extractedWMH/${ID}_nonPVWMH_lobar
 
 	# ${FSLDIR}/bin/fslmaths  ${subj_dir}/${ID}/mri/extractedWMH/${ID}_nonPVWMH_lobar \
@@ -165,7 +171,7 @@ WMHextraction_kNNdiscovery_Step3(){
 	# all in one image
 	${FSLDIR}/bin/fslmaths ${subj_dir}/${ID}/mri/extractedWMH/${ID}_WMH \
 							-bin \
-							-mul $(dirname ${pipelinePath})/Templates/DARTEL_lobar_and_arterial_templates/DARTEL_arterial_template \
+                            -mul $arterial_mask \
 							${subj_dir}/${ID}/mri/extractedWMH/${ID}_WMH_arterial
 
 	# ${FSLDIR}/bin/fslmaths ${subj_dir}/${ID}/mri/extractedWMH/${ID}_WMH_arterial \
@@ -639,7 +645,7 @@ WMHextraction_kNNdiscovery_Step3(){
 
 	# generate WMH masked FLAIR image
 	${FSLDIR}/bin/fslmaths ${studyFolder}/subjects/${ID}/mri/extractedWMH/${ID}_WMH \
-							-mas $(dirname ${pipelinePath})/Templates/DARTEL_GM_WM_CSF_prob_maps/65to75/DARTEL_WM_prob_map_thr0_8_bin \
+                            -mas $wm_prob_thr \
 							-mul ${studyFolder}/subjects/${ID}/mri/preprocessing/wr${flair_filename} \
 							-nan \
 							-thr 0 \
@@ -657,7 +663,7 @@ WMHextraction_kNNdiscovery_Step3(){
 
 	${FSLDIR}/bin/fslmaths ${studyFolder}/subjects/${ID}/mri/extractedWMH/temp/periventricle_mask_${PVmag} \
 							-binv \
-							-mul $(dirname ${pipelinePath})/Templates/DARTEL_lobar_and_arterial_templates/DARTEL_lobar_template \
+                            -mul $lobar_mask \
 							-add ${studyFolder}/subjects/${ID}/mri/extractedWMH/temp/periventricle_mask_${PVmag}_mul20 \
 							${studyFolder}/subjects/${ID}/mri/extractedWMH/temp/lobar_map_with_PVmag${PVmag}_periventricle
 
@@ -874,7 +880,7 @@ WMHextraction_kNNdiscovery_Step3(){
 								${studyFolder}/subjects/${ID}/mri/extractedWMH/temp/${ID}_cl${clusterInd}_COGonLobTem \
 								-odt int
 
-		${FSLDIR}/bin/fslmaths $(dirname ${pipelinePath})/Templates/DARTEL_lobar_and_arterial_templates/DARTEL_arterial_template \
+		${FSLDIR}/bin/fslmaths $arterial_mask \
 								-roi ${cog_x} 1 ${cog_y} 1 ${cog_z} 1 0 1 \
 								${studyFolder}/subjects/${ID}/mri/extractedWMH/temp/${ID}_cl${clusterInd}_COGonArtTem \
 								-odt int
@@ -1459,8 +1465,12 @@ WMHextraction_kNNdiscovery_Step3(){
 # $3 = pipelinePath
 # $4 = PVWMH magnitude (in mm)
 # $5 = probability threshold as a string
+# $6 = wm_prob_thr
+# $7 = ventricle_mask
+# $8 = lobar_mask
+# $9 = arterial_mask
 
-WMHextraction_kNNdiscovery_Step3 $1 $2 $3 $4 $5
+WMHextraction_kNNdiscovery_Step3 $1 $2 $3 $4 $5 $6 $7 $8 $9
 #> "${2}/${1}/mri/extractedWMH/${1}.log"
 
 
