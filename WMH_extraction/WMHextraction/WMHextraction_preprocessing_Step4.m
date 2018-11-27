@@ -40,7 +40,7 @@ function WMHextraction_preprocessing_Step4 (studyFolder, template, coregExcldLis
                 % set the subtemp's ID
                 subtemp.subID = i
                 % Need to copy the flair image to preproc
-                flair=strcat(studyFolder,'/subjects/',ID,'/orig/',FLAIRfolder(i).name)
+                flair=strcat(studyFolder,'/subjects/',ID,'/mri/orig/',FLAIRfolder(i).name)
                 rflair = strcat (studyFolder, '/subjects/', ID, '/mri/preprocessing/r', FLAIRfolder(i).name);
                 wflair = strcat (studyFolder, '/subjects/', ID, '/mri/preprocessing/wr', FLAIRfolder(i).name);
                 copyfile(flair,wflair)
@@ -58,24 +58,24 @@ function WMHextraction_preprocessing_Step4 (studyFolder, template, coregExcldLis
                 c1 = strcat(studyFolder,'/subjects/',ID,'/mri/preprocessing/c1',T1folder(i).name)
                 c2 = strcat(studyFolder,'/subjects/',ID,'/mri/preprocessing/c2',T1folder(i).name)
                 c3 = strcat(studyFolder,'/subjects/',ID,'/mri/preprocessing/c3',T1folder(i).name)
-                movfile(rc1,tc1)
-                movfile(rc2,tc2)
-                movfile(rc3,tc3)
+                movefile(rc1,tc1)
+                movefile(rc2,tc2)
+                movefile(rc3,tc3)
     
                 % Prep a few more variable names
-                t1 = strcat(studyFolder,'/subjects/',ID,'/mri/orig/'T1folder(i).name)                
-                rt1_o = strcat(studyFolder,'/subjects/',ID,'/mri/orig/r'T1folder(i).name)                
+                t1 = strcat(studyFolder,'/subjects/',ID,'/mri/orig/',T1folder(i).name)                
+                rt1_o = strcat(studyFolder,'/subjects/',ID,'/mri/orig/r',T1folder(i).name)                
                 rt1 = strcat(studyFolder,'/subjects/',ID,'/mri/preprocessing/r',T1folder(i).name)
                 wt1 = strcat(studyFolder,'/subjects/',ID,'/mri/preprocessing/w',T1folder(i).name)
     
                 % Perform the coregistrations to FLAIR dimensions
-                CNSP_registration(rflair,flair,c1) 
-                CNSP_registration(rflair,flair,c2) 
-                CNSP_registration(rflair,flair,c3) 
-                CNSP_registration(rflair,flair,t1) 
+                CNSP_registration(rflair,flair,pwd,c1) 
+                CNSP_registration(rflair,flair,pwd,c2) 
+                CNSP_registration(rflair,flair,pwd,c3) 
+                CNSP_registration(rflair,flair,pwd,t1) 
                 
                 % Some cleanup for compatibility
-                movefile(rt1_o,rt1)
+                movefile(rt1_o,wt1)
                 movefile(rc1,wc1)
                 movefile(rc2,wc2)
                 movefile(rc3,wc3)
@@ -116,88 +116,87 @@ function WMHextraction_preprocessing_Step4 (studyFolder, template, coregExcldLis
 
             end
         end
+    end
         
 
-        if strcmp (template.name,'creating template')
+    if strcmp (template.name,'creating template')
 
-                % create studyFolder/subjects/cohort_probability_maps
-                if exist([studyFolder '/subjects/cohort_probability_maps'],'dir') == 7
-                    rmdir ([studyFolder '/subjects/cohort_probability_maps'],'s');
-                end
-                mkdir ([studyFolder '/subjects'], 'cohort_probability_maps');
-
-
-                % average wcGM/wcWM/wcCSF
-                wcGMarr = cell (Nsubj,1);
-                wcWMarr = cell (Nsubj,1);
-                wcCSFarr = cell (Nsubj,1);
-
-                for j = 1:Nsubj
-                    T1imgNames = strsplit (T1folder(j).name, '_');   % split T1 image name, delimiter is underscore
-                    ID = T1imgNames{1};   % first section is ID
-                    
-                    wcGMarr{j,1} = [studyFolder '/subjects/' ID '/mri/preprocessing/wc1' T1folder(j).name];
-                    wcWMarr{j,1} = [studyFolder '/subjects/' ID '/mri/preprocessing/wc2' T1folder(j).name];
-                    wcCSFarr{j,1} = [studyFolder '/subjects/' ID '/mri/preprocessing/wc3' T1folder(j).name];
-                end
-
-                outputDir = [studyFolder '/subjects/cohort_probability_maps'];
-
-                GMavg = CNSP_imgCal ('avg', ...
-                                    outputDir, ...
-                                    'cohort_GM_probability_map', ...
-                                    Nsubj, ...
-                                    wcGMarr...
-                                    );
-                WMavg = CNSP_imgCal ('avg', ...
-                                    outputDir, ...
-                                    'cohort_WM_probability_map', ...
-                                    Nsubj, ...
-                                    wcWMarr...
-                                    );
-                CSFavg = CNSP_imgCal ('avg', ...
-                                    outputDir, ...
-                                    'cohort_CSF_probability_map', ...
-                                    Nsubj, ...
-                                    wcCSFarr...
-                                    );
-
-                % cohort probability maps thr 0.8
-    %             system (['chmod +x ' CNSP_path '/WMH_extraction/WMHextraction/cohortAvgProbMaps_thr0_8.sh']);
-                system ([CNSP_path '/WMH_extraction/WMHextraction/cohortAvgProbMaps_thr0_8.sh ' ...
-                                                                                GMavg ' ' ...
-                                                                                WMavg ' ' ...
-                                                                                CSFavg ' ' ...
-                                                                                outputDir...
-                                                                                ]);
+        % create studyFolder/subjects/cohort_probability_maps
+        if exist([studyFolder '/subjects/cohort_probability_maps'],'dir') == 7
+            rmdir ([studyFolder '/subjects/cohort_probability_maps'],'s');
+        end
+        mkdir ([studyFolder '/subjects'], 'cohort_probability_maps');
 
 
-                % move generated Template0-6
-                cmd_mvTemplate_1 = ['if [ ! -d ' studyFolder '/subjects/DARTELtemplate ]; then mkdir ' studyFolder '/subjects/DARTELtemplate; fi'];
-                system (cmd_mvTemplate_1);
-                % SubjDirExistingFolders = dir (strcat(studyFolder, '/subjects'));
-                % firstID = SubjDirExistingFolders(3).name;
-                % cmd_mvTemplate_2 = ['mv ' studyFolder '/subjects/' firstID '/mri/preprocessing/Template_0.nii ' studyFolder '/subjects/DARTELtemplate'];
-                % cmd_mvTemplate_3 = ['mv ' studyFolder '/subjects/' firstID '/mri/preprocessing/Template_1.nii ' studyFolder '/subjects/DARTELtemplate'];
-                % cmd_mvTemplate_4 = ['mv ' studyFolder '/subjects/' firstID '/mri/preprocessing/Template_2.nii ' studyFolder '/subjects/DARTELtemplate'];
-                % cmd_mvTemplate_5 = ['mv ' studyFolder '/subjects/' firstID '/mri/preprocessing/Template_3.nii ' studyFolder '/subjects/DARTELtemplate'];
-                % cmd_mvTemplate_6 = ['mv ' studyFolder '/subjects/' firstID '/mri/preprocessing/Template_4.nii ' studyFolder '/subjects/DARTELtemplate'];
-                % cmd_mvTemplate_7 = ['mv ' studyFolder '/subjects/' firstID '/mri/preprocessing/Template_5.nii ' studyFolder '/subjects/DARTELtemplate'];
-                % cmd_mvTemplate_8 = ['mv ' studyFolder '/subjects/' firstID '/mri/preprocessing/Template_6.nii ' studyFolder '/subjects/DARTELtemplate'];
-                cmd_mvTemplate_2 = ['mv ' studyFolder '/subjects/*/mri/preprocessing/Template_0.nii ' studyFolder '/subjects/DARTELtemplate'];
-                cmd_mvTemplate_3 = ['mv ' studyFolder '/subjects/*/mri/preprocessing/Template_1.nii ' studyFolder '/subjects/DARTELtemplate'];
-                cmd_mvTemplate_4 = ['mv ' studyFolder '/subjects/*/mri/preprocessing/Template_2.nii ' studyFolder '/subjects/DARTELtemplate'];
-                cmd_mvTemplate_5 = ['mv ' studyFolder '/subjects/*/mri/preprocessing/Template_3.nii ' studyFolder '/subjects/DARTELtemplate'];
-                cmd_mvTemplate_6 = ['mv ' studyFolder '/subjects/*/mri/preprocessing/Template_4.nii ' studyFolder '/subjects/DARTELtemplate'];
-                cmd_mvTemplate_7 = ['mv ' studyFolder '/subjects/*/mri/preprocessing/Template_5.nii ' studyFolder '/subjects/DARTELtemplate'];
-                cmd_mvTemplate_8 = ['mv ' studyFolder '/subjects/*/mri/preprocessing/Template_6.nii ' studyFolder '/subjects/DARTELtemplate'];
-                system (cmd_mvTemplate_2);
-                system (cmd_mvTemplate_3);
-                system (cmd_mvTemplate_4);
-                system (cmd_mvTemplate_5);
-                system (cmd_mvTemplate_6);
-                system (cmd_mvTemplate_7);
-                system (cmd_mvTemplate_8);
- 
+        % average wcGM/wcWM/wcCSF
+        wcGMarr = cell (Nsubj,1);
+        wcWMarr = cell (Nsubj,1);
+        wcCSFarr = cell (Nsubj,1);
 
+        for j = 1:Nsubj
+            T1imgNames = strsplit (T1folder(j).name, '_');   % split T1 image name, delimiter is underscore
+            ID = T1imgNames{1};   % first section is ID
+            
+            wcGMarr{j,1} = [studyFolder '/subjects/' ID '/mri/preprocessing/wc1' T1folder(j).name];
+            wcWMarr{j,1} = [studyFolder '/subjects/' ID '/mri/preprocessing/wc2' T1folder(j).name];
+            wcCSFarr{j,1} = [studyFolder '/subjects/' ID '/mri/preprocessing/wc3' T1folder(j).name];
+        end
+
+        outputDir = [studyFolder '/subjects/cohort_probability_maps'];
+
+        GMavg = CNSP_imgCal ('avg', ...
+                            outputDir, ...
+                            'cohort_GM_probability_map', ...
+                            Nsubj, ...
+                            wcGMarr...
+                            );
+        WMavg = CNSP_imgCal ('avg', ...
+                            outputDir, ...
+                            'cohort_WM_probability_map', ...
+                            Nsubj, ...
+                            wcWMarr...
+                            );
+        CSFavg = CNSP_imgCal ('avg', ...
+                            outputDir, ...
+                            'cohort_CSF_probability_map', ...
+                            Nsubj, ...
+                            wcCSFarr...
+                            );
+
+        % cohort probability maps thr 0.8
+%             system (['chmod +x ' CNSP_path '/WMH_extraction/WMHextraction/cohortAvgProbMaps_thr0_8.sh']);
+        system ([CNSP_path '/WMH_extraction/WMHextraction/cohortAvgProbMaps_thr0_8.sh ' ...
+                                                                        GMavg ' ' ...
+                                                                        WMavg ' ' ...
+                                                                        CSFavg ' ' ...
+                                                                        outputDir...
+                                                                        ]);
+
+
+        % move generated Template0-6
+        cmd_mvTemplate_1 = ['if [ ! -d ' studyFolder '/subjects/DARTELtemplate ]; then mkdir ' studyFolder '/subjects/DARTELtemplate; fi'];
+        system (cmd_mvTemplate_1);
+        % SubjDirExistingFolders = dir (strcat(studyFolder, '/subjects'));
+        % firstID = SubjDirExistingFolders(3).name;
+        % cmd_mvTemplate_2 = ['mv ' studyFolder '/subjects/' firstID '/mri/preprocessing/Template_0.nii ' studyFolder '/subjects/DARTELtemplate'];
+        % cmd_mvTemplate_3 = ['mv ' studyFolder '/subjects/' firstID '/mri/preprocessing/Template_1.nii ' studyFolder '/subjects/DARTELtemplate'];
+        % cmd_mvTemplate_4 = ['mv ' studyFolder '/subjects/' firstID '/mri/preprocessing/Template_2.nii ' studyFolder '/subjects/DARTELtemplate'];
+        % cmd_mvTemplate_5 = ['mv ' studyFolder '/subjects/' firstID '/mri/preprocessing/Template_3.nii ' studyFolder '/subjects/DARTELtemplate'];
+        % cmd_mvTemplate_6 = ['mv ' studyFolder '/subjects/' firstID '/mri/preprocessing/Template_4.nii ' studyFolder '/subjects/DARTELtemplate'];
+        % cmd_mvTemplate_7 = ['mv ' studyFolder '/subjects/' firstID '/mri/preprocessing/Template_5.nii ' studyFolder '/subjects/DARTELtemplate'];
+        % cmd_mvTemplate_8 = ['mv ' studyFolder '/subjects/' firstID '/mri/preprocessing/Template_6.nii ' studyFolder '/subjects/DARTELtemplate'];
+        cmd_mvTemplate_2 = ['mv ' studyFolder '/subjects/*/mri/preprocessing/Template_0.nii ' studyFolder '/subjects/DARTELtemplate'];
+        cmd_mvTemplate_3 = ['mv ' studyFolder '/subjects/*/mri/preprocessing/Template_1.nii ' studyFolder '/subjects/DARTELtemplate'];
+        cmd_mvTemplate_4 = ['mv ' studyFolder '/subjects/*/mri/preprocessing/Template_2.nii ' studyFolder '/subjects/DARTELtemplate'];
+        cmd_mvTemplate_5 = ['mv ' studyFolder '/subjects/*/mri/preprocessing/Template_3.nii ' studyFolder '/subjects/DARTELtemplate'];
+        cmd_mvTemplate_6 = ['mv ' studyFolder '/subjects/*/mri/preprocessing/Template_4.nii ' studyFolder '/subjects/DARTELtemplate'];
+        cmd_mvTemplate_7 = ['mv ' studyFolder '/subjects/*/mri/preprocessing/Template_5.nii ' studyFolder '/subjects/DARTELtemplate'];
+        cmd_mvTemplate_8 = ['mv ' studyFolder '/subjects/*/mri/preprocessing/Template_6.nii ' studyFolder '/subjects/DARTELtemplate'];
+        system (cmd_mvTemplate_2);
+        system (cmd_mvTemplate_3);
+        system (cmd_mvTemplate_4);
+        system (cmd_mvTemplate_5);
+        system (cmd_mvTemplate_6);
+        system (cmd_mvTemplate_7);
+        system (cmd_mvTemplate_8);
     end
