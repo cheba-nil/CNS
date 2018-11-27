@@ -206,7 +206,7 @@ function generate(obj);
     % Create our new thresholded maps ...
     system(['$FSLDIR/bin/fslmaths ',obj.gm_prob, ...
             ' -uthr 0.8 ',strcat(obj.gm_prob_thr,'.gz')]);
-    gunzip(obj.gm_prob_thr)
+    gunzip(strcat(obj.gm_prob_thr,'.gz'))
     system(['$FSLDIR/bin/fslmaths ',obj.wm_prob, ...
             ' -uthr 0.8 ',strcat(obj.wm_prob_thr,'.gz')]);
-    gunzip(obj.wm_prob_thr)
+    gunzip(strcat(obj.wm_prob_thr,'.gz'))
