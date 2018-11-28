@@ -20,21 +20,21 @@ if exist (decision4training, 'file') == 2
     if exist (feature4training, 'file') == 2
         
         %% generate features for prediction
-        if nargin == 10
-            generateFeatures_forPrediction (ID, [template.studyFolder '/subjects'], template.CNS_path, template);
-        elseif (nargin >= 11) && strcmp(varargin{1},'noGenF')
+        if nargin == 7
+            generateFeatures_forPrediction (ID, [template.studyFolder '/subjects'], template);
+        elseif (nargin >= 8) && strcmp(varargin{1},'noGenF')
             % no need to generate features
-        elseif (nargin >= 11) && ~strcmp(varargin{1},'noGenF')
-            generateFeatures_forPrediction (ID, [template.studyFolder '/subjects'], template.CNS_path, template);
+        elseif (nargin >= 8) && ~strcmp(varargin{1},'noGenF')
+            generateFeatures_forPrediction (ID, [template.studyFolder '/subjects'], template);
         end
 
 
         %% build kNN model
-        if (nargin == 10) || ((nargin == 11) && strcmp(varargin{1},'noGenF'))
+        if (nargin == 7) || ((nargin == 8) && strcmp(varargin{1},'noGenF'))
             int_kNN_mdl = build_kNN_classifier (k,feature4training, decision4training, trainingFeatures1);
-        elseif nargin > 11 && strcmp(varargin{1},'noGenF')
+        elseif nargin > 8 && strcmp(varargin{1},'noGenF')
             int_kNN_mdl = build_kNN_classifier (k,feature4training, decision4training, trainingFeatures1, varargin{2:end});
-        elseif nargin > 10 && ~strcmp(varargin{1},'noGenF')
+        elseif nargin > 7 && ~strcmp(varargin{1},'noGenF')
             int_kNN_mdl = build_kNN_classifier (k,feature4training, decision4training, trainingFeatures1, varargin{:});
         end
 

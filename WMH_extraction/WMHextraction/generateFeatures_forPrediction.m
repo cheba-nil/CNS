@@ -1,8 +1,17 @@
 function generateFeatures_forPrediction (ID, subj_dir, template)
 
+    tmpf = strcat (subj_dir, '/', ID, '/mri/kNN_intermediateOutput/tmp.nii.gz');
     csfMasked_seg0_path = strcat (subj_dir, '/', ID, '/mri/kNN_intermediateOutput/', ID, '_accurateCSFmasked_seg0.nii.gz');
     csfMasked_seg1_path = strcat (subj_dir, '/', ID, '/mri/kNN_intermediateOutput/', ID, '_accurateCSFmasked_seg1.nii.gz');
     csfMasked_seg2_path = strcat (subj_dir, '/', ID, '/mri/kNN_intermediateOutput/', ID, '_accurateCSFmasked_seg2.nii.gz');
+
+    reslice_nii(csfMasked_seg0_path,tmpf);
+    movefile(tmpf,csfMasked_seg0_path);
+    reslice_nii(csfMasked_seg1_path,tmpf);
+    movefile(tmpf,csfMasked_seg1_path);
+    reslice_nii(csfMasked_seg2_path,tmpf);
+    movefile(tmpf,csfMasked_seg2_path);
+
     seg0_nii_ventricleRemoved = load_nii (csfMasked_seg0_path);
     seg1_nii_ventricleRemoved = load_nii (csfMasked_seg1_path);
     seg2_nii_ventricleRemoved = load_nii (csfMasked_seg2_path);
@@ -10,12 +19,18 @@ function generateFeatures_forPrediction (ID, subj_dir, template)
     flair_path_char = ls (strcat (subj_dir, '/', ID, '/mri/preprocessing/FAST_nonBrainRemoved_wr', ID, '_*_restore.nii.gz'));
     flair_path_cell = cellstr(flair_path_char);
     flair_path = flair_path_cell{1};
+
+    reslice_nii(flair_path,tmpf);
+    movefile(tmpf,flair_path);
     flair_nii = load_nii (flair_path);
 
     % used intensity normalised T1
     t1_path_char = ls (strcat (subj_dir, '/', ID, '/mri/kNN_intermediateOutput/', ID, '_wT1_NBTR_FAST_restore.nii.gz'));
     t1_path_cell = cellstr (t1_path_char);
     t1_path = t1_path_cell{1};
+
+    reslice_nii(t1_path,tmpf);
+    movefile(tmpf,t1_path);
     t1_nii = load_nii (t1_path);
 
     GM_average_mask_nii = template.gm_prob;
