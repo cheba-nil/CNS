@@ -18,14 +18,14 @@ function generateFeatures_forPrediction (ID, subj_dir, CNSP_path, template, ageR
     t1_path = t1_path_cell{1};
     t1_nii = load_nii (t1_path);
 
-    GM_average_mask_nii = template.gm_prob
-    WM_average_mask_nii = template.wm_prob
-    WM_prob_map_nii = template.wm_prob_thr
-    GM_prob_map_nii = template.gm_prob_thr
-    CSF_prob_map_nii = template.csf_prob_thr
+    GM_average_mask_nii = template.gm_prob;
+    WM_average_mask_nii = template.wm_prob;
+    WM_prob_map_nii = template.wm_prob_thr;
+    GM_prob_map_nii = template.gm_prob_thr;
+    CSF_prob_map_nii = template.csf_prob_thr;
 
                                
-    Vent_distanceMap_nii = template.ventrciles
+    Vent_distanceMap_nii = template.ventricles;
                                 
                                 
     % indWMnoCSF_path_char = ls (strcat (subj_dir, '/', ID, '/mri/kNN_intermediateOutput/', ID, '_accurateCSFmasked_OATSaverageWM.nii.gz'));
