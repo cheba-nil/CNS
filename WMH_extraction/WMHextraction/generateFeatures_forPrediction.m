@@ -1,4 +1,4 @@
-function generateFeatures_forPrediction (ID, subj_dir, CNSP_path, template, ageRange)
+function generateFeatures_forPrediction (ID, subj_dir, template)
 
     csfMasked_seg0_path = strcat (subj_dir, '/', ID, '/mri/kNN_intermediateOutput/', ID, '_accurateCSFmasked_seg0.nii.gz');
     csfMasked_seg1_path = strcat (subj_dir, '/', ID, '/mri/kNN_intermediateOutput/', ID, '_accurateCSFmasked_seg1.nii.gz');
@@ -25,7 +25,7 @@ function generateFeatures_forPrediction (ID, subj_dir, CNSP_path, template, ageR
     CSF_prob_map_nii = template.csf_prob_thr
 
                                
-    Vent_distanceMap_nii = template.ventrciles
+    Vent_distanceMap_nii = template.ventricles
                                 
                                 
     % indWMnoCSF_path_char = ls (strcat (subj_dir, '/', ID, '/mri/kNN_intermediateOutput/', ID, '_accurateCSFmasked_OATSaverageWM.nii.gz'));

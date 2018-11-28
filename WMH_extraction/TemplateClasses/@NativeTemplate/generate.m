@@ -200,13 +200,15 @@ function generate(obj);
     system(['$FSLDIR/bin/fslmaths ',obj.arterial,' -nan ',tmpf]);
     gunzip(tmpf);
     movefile(tmpfuz,obj.arterial);
-
     
+    delete(tmpf)
 
     % Create our new thresholded maps ...
     system(['$FSLDIR/bin/fslmaths ',obj.gm_prob, ...
             ' -uthr 0.8 ',strcat(obj.gm_prob_thr,'.gz')]);
     gunzip(strcat(obj.gm_prob_thr,'.gz'))
+    delete(strcat(obj.gm_prob_thr,'.gz'))
     system(['$FSLDIR/bin/fslmaths ',obj.wm_prob, ...
             ' -uthr 0.8 ',strcat(obj.wm_prob_thr,'.gz')]);
     gunzip(strcat(obj.wm_prob_thr,'.gz'))
+    delete(strcat(obj.wm_prob_thr,'.gz'))

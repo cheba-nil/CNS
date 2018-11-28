@@ -55,11 +55,11 @@ classdef NativeTemplate < AbstractTemplate
         end
 
         function value = get.lobar(obj)
-            value = strcat(obj.dir,'/rwCSF_lobar.nii'); 
+            value = strcat(obj.dir,'/rwlobar_template.nii'); 
         end
 
         function value = get.arterial(obj)
-            value = strcat(obj.dir,'/rwCSF_arterial.nii'); 
+            value = strcat(obj.dir,'/rwarterial_template.nii'); 
         end
 
     end
