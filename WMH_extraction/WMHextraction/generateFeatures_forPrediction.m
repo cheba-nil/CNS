@@ -33,11 +33,11 @@ function generateFeatures_forPrediction (ID, subj_dir, template)
     movefile(tmpf,t1_path);
     t1_nii = load_nii (t1_path);
 
-    GM_average_mask_nii = template.gm_prob;
-    WM_average_mask_nii = template.wm_prob;
-    WM_prob_map_nii = template.wm_prob_thr;
-    GM_prob_map_nii = template.gm_prob_thr;
-    CSF_prob_map_nii = template.csf_prob_thr;
+    GM_average_mask_nii = template.gm_prob_thr;
+    WM_average_mask_nii = template.wm_prob_thr;
+    WM_prob_map_nii = template.wm_prob;
+    GM_prob_map_nii = template.gm_prob;
+    CSF_prob_map_nii = template.csf_prob;
 
                                
     Vent_distanceMap_nii = template.ventricles;
