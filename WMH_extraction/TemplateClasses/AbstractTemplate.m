@@ -5,7 +5,7 @@
 % which inherits from AbstractTemplate
 % and fills out the specified properties
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-classdef (Abstract) AbstractTemplate
+classdef (Abstract) AbstractTemplate < matlab.mixin.Copyable
     properties (Abstract)
         % Name, for compatibility with legacy code
         name
@@ -21,7 +21,6 @@ classdef (Abstract) AbstractTemplate
         % Thresholded (p >= 0.8) Probability Maps
         gm_prob_thr
         wm_prob_thr
-        csf_prob_thr
 
         % Ventricle Distance
         ventricles

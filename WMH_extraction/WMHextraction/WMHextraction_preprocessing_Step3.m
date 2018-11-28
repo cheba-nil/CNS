@@ -25,12 +25,41 @@ function WMHextraction_preprocessing_Step3 (studyFolder, ...
     switch dartelTemplate.name
         case 'existing template'
             existingTemplateDARTELrun (studyFolder, CNSP_path, coregExcldList, segExcldList, ageRange)
-            
         case 'creating template'
             creatingTemplateDARTELrun (studyFolder, coregExcldList, segExcldList);
-
+        case 'native template'
+            nativeTemplateRun(dartelTemplate,coregExcldList,segExcldList) 
     end
     
+function nativeTemplateRun(template,coregExcldList,segExcldList)
+    T1folder = dir (strcat (template.studyFolder,'/originalImg/T1/*.nii'));
+    [Nsubj,n] = size (T1folder);
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % BAD CODE ALERT:
+    % Refer to comment in @NativeTemplate/generate.m
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    dtemplate = DartelTemplate(template.CNS_path, template.age_range);
+    WMHextraction_preprocessing_Step3(template.studyFolder,template.CNS_path, ...
+                                      dtemplate,coregExcldList,segExcldList,template.age_range);
+
+    excldList = [coregExcldList ' ' segExcldList];
+    excldIDs = strsplit (excldList, ' ');
+    
+    % generate a template foreach subject
+    parfor i = 1:Nsubj
+        subtemp = copy(template) % get copy to make this parfor friendly
+        subtemp.subID = i % set the subject ID
+
+        T1imgNames = strsplit (T1folder(i).name, '_');   % split T1 image name, delimiter is underscore
+        ID = T1imgNames{1};   % first section is ID
+
+        if ismember(ID, excldIDs) == 0
+            subtemp.generate()
+        end
+    end
+
+
     
     
  %% existing template DARTEL run
