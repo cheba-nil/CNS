@@ -5,67 +5,63 @@ function generateFeatures_forPrediction (ID, subj_dir, template)
     csfMasked_seg1_path = strcat (subj_dir, '/', ID, '/mri/kNN_intermediateOutput/', ID, '_accurateCSFmasked_seg1.nii.gz');
     csfMasked_seg2_path = strcat (subj_dir, '/', ID, '/mri/kNN_intermediateOutput/', ID, '_accurateCSFmasked_seg2.nii.gz');
 
-    reslice_nii(csfMasked_seg0_path,tmpf);
-    movefile(tmpf,csfMasked_seg0_path);
-    reslice_nii(csfMasked_seg1_path,tmpf);
-    movefile(tmpf,csfMasked_seg1_path);
-    reslice_nii(csfMasked_seg2_path,tmpf);
-    movefile(tmpf,csfMasked_seg2_path);
+    %reslice_nii(csfMasked_seg0_path,tmpf);
+    %movefile(tmpf,csfMasked_seg0_path);
+    %reslice_nii(csfMasked_seg1_path,tmpf);
+    %movefile(tmpf,csfMasked_seg1_path);
+    %reslice_nii(csfMasked_seg2_path,tmpf);
+    %movefile(tmpf,csfMasked_seg2_path);
 
-    seg0_nii_ventricleRemoved = load_nii (csfMasked_seg0_path);
-    seg1_nii_ventricleRemoved = load_nii (csfMasked_seg1_path);
-    seg2_nii_ventricleRemoved = load_nii (csfMasked_seg2_path);
+    seg0_nii_img_ventricleRemoved = niftiread (csfMasked_seg0_path);
+    seg1_nii_img_ventricleRemoved = niftiread (csfMasked_seg1_path);
+    seg2_nii_img_ventricleRemoved = niftiread (csfMasked_seg2_path);
 
     flair_path_char = ls (strcat (subj_dir, '/', ID, '/mri/preprocessing/FAST_nonBrainRemoved_wr', ID, '_*_restore.nii.gz'));
     flair_path_cell = cellstr(flair_path_char);
     flair_path = flair_path_cell{1};
 
-    reslice_nii(flair_path,tmpf);
-    movefile(tmpf,flair_path);
-    flair_nii = load_nii (flair_path);
+    %reslice_nii(flair_path,tmpf);
+    %movefile(tmpf,flair_path);
+    flair_nii_img = niftiread (flair_path);
 
     % used intensity normalised T1
     t1_path_char = ls (strcat (subj_dir, '/', ID, '/mri/kNN_intermediateOutput/', ID, '_wT1_NBTR_FAST_restore.nii.gz'));
     t1_path_cell = cellstr (t1_path_char);
     t1_path = t1_path_cell{1};
 
-    reslice_nii(t1_path,tmpf);
-    movefile(tmpf,t1_path);
-    t1_nii = load_nii (t1_path);
+    %reslice_nii(t1_path,tmpf);
+    %movefile(tmpf,t1_path);
+    t1_nii_img = niftiread (t1_path);
 
-    GM_average_mask_nii = template.gm_prob_thr;
-    WM_average_mask_nii = template.wm_prob_thr;
-    WM_prob_map_nii = template.wm_prob;
-    GM_prob_map_nii = template.gm_prob;
-    CSF_prob_map_nii = template.csf_prob;
+    %reslice_nii(template.gm_prob_thr,tmpf);
+    %movefile(tmpf,template.gm_prob_thr);
+    GM_average_mask_nii_img = niftiread(template.gm_prob_thr);
 
-                               
-    Vent_distanceMap_nii = template.ventricles;
+    %reslice_nii(template.wm_prob_thr,tmpf);
+    %movefile(tmpf,template.wm_prob_thr);
+    WM_average_mask_nii_img = niftiread(template.wm_prob_thr);
+
+    %reslice_nii(template.wm_prob,tmpf);
+    %movefile(tmpf,template.wm_prob);
+    WM_prob_map_nii_img = niftiread(template.wm_prob);
+
+    %reslice_nii(template.gm_prob,tmpf);
+    %movefile(tmpf,template.gm_prob);
+    GM_prob_map_nii_img = niftiread(template.gm_prob);
+
+    %reslice_nii(template.csf_prob,tmpf);
+    %movefile(tmpf,template.csf_prob);
+    CSF_prob_map_nii_img = niftiread(template.csf_prob);
+
+    %reslice_nii(template.ventricles,tmpf);
+    %movefile(tmpf,template.ventricles);
+    Vent_distanceMap_nii_img = niftiread(template.ventricles);
                                 
                                 
     % indWMnoCSF_path_char = ls (strcat (subj_dir, '/', ID, '/mri/kNN_intermediateOutput/', ID, '_accurateCSFmasked_OATSaverageWM.nii.gz'));
     % indWMnoCSF_path_cell = cellstr (indWMnoCSF_path_char);
     % indWMnoCSF_path = indWMnoCSF_path_cell{1};
-    % individualAccCSFmasked_WMaverageMaskNii = load_nii (indWMnoCSF_path);
-
-
-    %%%%%%%%%%%%%%%%%%%%
-    % change data type %
-    %%%%%%%%%%%%%%%%%%%%
-    seg0_nii_img_ventricleRemoved = cast (seg0_nii_ventricleRemoved.img,'double');
-    seg1_nii_img_ventricleRemoved = cast (seg1_nii_ventricleRemoved.img,'double');
-    seg2_nii_img_ventricleRemoved = cast (seg2_nii_ventricleRemoved.img,'double');
-    flair_nii_img = cast (flair_nii.img, 'double');
-    t1_nii_img = cast (t1_nii.img, 'double');
-    GM_average_mask_nii_img = cast (GM_average_mask_nii.img, 'double');
-    WM_average_mask_nii_img = cast (WM_average_mask_nii.img, 'double');
-    WM_prob_map_nii_img = cast (WM_prob_map_nii.img, 'double');
-    GM_prob_map_nii_img = cast (GM_prob_map_nii.img, 'double');
-    CSF_prob_map_nii_img = cast (CSF_prob_map_nii.img, 'double');
-    Vent_distanceMap_nii_img = cast (Vent_distanceMap_nii.img, 'double');
-    % WM_average_mask_nii_img_accCSFapplied = cast (individualAccCSFmasked_WMaverageMaskNii.img, 'double');
-    % view_nii(WM_average_mask_nii);
-    % view_nii(individualAccCSFmasked_WMaverageMaskNii);
+    % individualAccCSFmasked_WMaverageMaskNii = niftiread (indWMnoCSF_path);
 
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

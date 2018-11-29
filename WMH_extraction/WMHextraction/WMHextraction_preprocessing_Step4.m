@@ -43,7 +43,8 @@ function WMHextraction_preprocessing_Step4 (studyFolder, template, coregExcldLis
                 flair=strcat(studyFolder,'/subjects/',ID,'/mri/orig/',FLAIRfolder(i).name)
                 rflair = strcat (studyFolder, '/subjects/', ID, '/mri/preprocessing/r', FLAIRfolder(i).name);
                 wflair = strcat (studyFolder, '/subjects/', ID, '/mri/preprocessing/wr', FLAIRfolder(i).name);
-                copyfile(flair,wflair)
+                %reslice_nii(flair,wflair,[],[2])
+                copyfile(flair,wflair) % trying to avoid reslicing
 
                 % Because spm is annoying, let's be lazy and temporarily move rc[1-3]
                 rc1 = strcat(studyFolder,'/subjects/',ID,'/mri/preprocessing/rc1',T1folder(i).name)
@@ -69,10 +70,10 @@ function WMHextraction_preprocessing_Step4 (studyFolder, template, coregExcldLis
                 wt1 = strcat(studyFolder,'/subjects/',ID,'/mri/preprocessing/w',T1folder(i).name)
     
                 % Perform the coregistrations to FLAIR dimensions
-                CNSP_registration(rflair,flair,pwd,c1) 
-                CNSP_registration(rflair,flair,pwd,c2) 
-                CNSP_registration(rflair,flair,pwd,c3) 
-                CNSP_registration(rflair,flair,pwd,t1) 
+                CNSP_registration(rflair,wflair,pwd,c1) 
+                CNSP_registration(rflair,wflair,pwd,c2) 
+                CNSP_registration(rflair,wflair,pwd,c3) 
+                CNSP_registration(rflair,wflair,pwd,t1) 
                 
                 % Some cleanup for compatibility
                 movefile(rt1_o,wt1)
