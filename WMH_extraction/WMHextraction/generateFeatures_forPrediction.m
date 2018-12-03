@@ -88,12 +88,20 @@ function generateFeatures_forPrediction (ID, subj_dir, template)
     seg0ClustersLableMatrix = cast(labelmatrix (seg0Clusters),'double'); % lable each cluster (first cluster as 1, second as 2...)
     seg1ClustersLableMatrix = cast(labelmatrix (seg1Clusters),'double');
     seg2ClustersLableMatrix = cast(labelmatrix (seg2Clusters),'double');
-    save_nii(make_nii (seg0ClustersLableMatrix),strcat(subj_dir, '/', ID, '/mri/extractedWMH/temp/', ID, '_seg0.nii'));
-    save_nii(make_nii (seg1ClustersLableMatrix),strcat(subj_dir, '/', ID, '/mri/extractedWMH/temp/', ID, '_seg1.nii'));
-    save_nii(make_nii (seg2ClustersLableMatrix),strcat(subj_dir, '/', ID, '/mri/extractedWMH/temp/', ID, '_seg2.nii'));
+    niftiwrite((seg0ClustersLableMatrix),strcat(subj_dir, '/', ID, '/mri/extractedWMH/temp/', ID, '_seg0.nii'));
+    niftiwrite((seg1ClustersLableMatrix),strcat(subj_dir, '/', ID, '/mri/extractedWMH/temp/', ID, '_seg1.nii'));
+    niftiwrite((seg2ClustersLableMatrix),strcat(subj_dir, '/', ID, '/mri/extractedWMH/temp/', ID, '_seg2.nii'));
+
+    % copy over the correct geometry
+    system(strcat('$FSLDIR/fslcpgeom ', csfMasked_seg0_path, ' ', subj_dir, '/', ID, '/mri/extractedWMH/temp/', ID, '_seg0.nii'));
+    system(strcat('$FSLDIR/fslcpgeom ', csfMasked_seg0_path, ' ', subj_dir, '/', ID, '/mri/extractedWMH/temp/', ID, '_seg1.nii'));
+    system(strcat('$FSLDIR/fslcpgeom ', csfMasked_seg0_path, ' ', subj_dir, '/', ID, '/mri/extractedWMH/temp/', ID, '_seg2.nii'));
+
+
     % imshow3Dfull (seg2ClustersLableMatrix);
     allSegClustersLableMatrix = cat (4, seg0ClustersLableMatrix, seg1ClustersLableMatrix, seg2ClustersLableMatrix); % concatenate cluster lable maps to a vector
     %clusterMask (size(nii_img),Clusters.NumObjects);
+
 
 
     %%%%%%%%%%%%%%%%%%%%%%%%%
