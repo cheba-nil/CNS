@@ -29,6 +29,8 @@ function generate(obj);
     %WMHextraction_preprocessing_Step3(obj.studyFolder,obj.CNS_path, ... 
     %                                  dtemplate,'','',obj.age_range);
 
+    tmpf = strcat(obj.dir,'/tmp.nii.gz');
+
     % and move the warp to our template directory
     warpfile = strcat('u_rc1',obj.subID,'_T1.nii');
     movefile(strcat(obj.studyFolder,'/subjects/',obj.subID,...
@@ -136,10 +138,15 @@ function generate(obj);
     % get c1 into flair dimensions
     flair = strcat(obj.studyFolder,'/subjects/',obj.subID,...
                     '/mri/orig/',obj.subID,'_FLAIR.nii'); ...
+    reflair = strcat(obj.dir,'/reslice',obj.subID,'_FLAIR.nii');
+    %reslice_nii(flair,reflair,[],[2])
+    copyfile(flair,reflair)
+
     orig_rflair = strcat(obj.studyFolder,'/subjects/',obj.subID,...
                     '/mri/preprocessing/r',obj.subID,'_FLAIR.nii');
     rflair = strcat(obj.dir,'/r',obj.subID,'_FLAIR.nii');
     copyfile(orig_rflair,rflair)
+
 
     orig_c1 = strcat(obj.studyFolder,'/subjects/',obj.subID,...
                     '/mri/preprocessing/c1',obj.subID,'_T1.nii');
@@ -149,7 +156,7 @@ function generate(obj);
 
     fc1 = strcat(obj.dir,'/fc1',obj.subID,'_T1.nii');
         
-    CNSP_registration(rflair,flair,obj.dir,c1)
+    CNSP_registration(rflair,reflair,obj.dir,c1)
     movefile(strcat(obj.dir,'/rc1',obj.subID,'_T1.nii'),fc1)
 
     % this must be done after the movefile on the previous line
@@ -170,7 +177,6 @@ function generate(obj);
     CNSP_registration(rc1,fc1,obj.dir,warterial,'NN')
 
     % Remove NaN's because they're evil
-    tmpf = strcat(obj.dir,'/tmp.nii.gz');
     tmpfuz = strcat(obj.dir,'/tmp.nii');
 
     system(['$FSLDIR/bin/fslmaths ',obj.brain_mask,' -nan ',tmpf]);
@@ -205,10 +211,10 @@ function generate(obj);
 
     % Create our new thresholded maps ...
     system(['$FSLDIR/bin/fslmaths ',obj.gm_prob, ...
-            ' -uthr 0.8 ',strcat(obj.gm_prob_thr,'.gz')]);
+            ' -thr 0.8 ',strcat(obj.gm_prob_thr,'.gz')]);
     gunzip(strcat(obj.gm_prob_thr,'.gz'))
     delete(strcat(obj.gm_prob_thr,'.gz'))
     system(['$FSLDIR/bin/fslmaths ',obj.wm_prob, ...
-            ' -uthr 0.8 ',strcat(obj.wm_prob_thr,'.gz')]);
+            ' -thr 0.8 ',strcat(obj.wm_prob_thr,'.gz')]);
     gunzip(strcat(obj.wm_prob_thr,'.gz'))
     delete(strcat(obj.wm_prob_thr,'.gz'))
