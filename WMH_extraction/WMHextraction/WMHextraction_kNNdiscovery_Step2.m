@@ -55,13 +55,13 @@ if exist (decision4training, 'file') == 2
         
 
         %% saved seg012 clusters with label ID
-        seg0_lablID_struct = load_nii ([template.studyFolder '/subjects/' ID '/mri/extractedWMH/temp/' ID '_seg0.nii']);
-        seg1_lablID_struct = load_nii ([template.studyFolder '/subjects/' ID '/mri/extractedWMH/temp/' ID '_seg1.nii']);
-        seg2_lablID_struct = load_nii ([template.studyFolder '/subjects/' ID '/mri/extractedWMH/temp/' ID '_seg2.nii']);
+        seg0_lablID = niftiread([template.studyFolder '/subjects/' ID '/mri/extractedWMH/temp/' ID '_seg0.nii']);
+        seg1_lablID = niftiread([template.studyFolder '/subjects/' ID '/mri/extractedWMH/temp/' ID '_seg1.nii']);
+        seg2_lablID = niftiread([template.studyFolder '/subjects/' ID '/mri/extractedWMH/temp/' ID '_seg2.nii']);
         
-        seg0_lablID = seg0_lablID_struct.img;
-        seg1_lablID = seg1_lablID_struct.img;
-        seg2_lablID = seg2_lablID_struct.img;
+        %seg0_lablID = seg0_lablID_struct.img;
+        %seg1_lablID = seg1_lablID_struct.img;
+        %seg2_lablID = seg2_lablID_struct.img;
         
         clear seg0_lablID_struct;
         clear seg1_lablID_struct;
@@ -113,7 +113,7 @@ if exist (decision4training, 'file') == 2
 %         end
 %         
 %         seg012_label_img = seg012_combined4D_label(:,:,:,1) + seg012_combined4D_label(:,:,:,2) + seg012_combined4D_label(:,:,:,3);
-%         save_nii(make_nii (seg012_label_img), [template.studyFolder '/subjects/' ID '/mri/extractedWMH/' ID '_WMH_LablMap.nii']);
+%         niftiwrite(make_nii (seg012_label_img), [template.studyFolder '/subjects/' ID '/mri/extractedWMH/' ID '_WMH_LablMap.nii']);
                         
                         
         %% probability map
@@ -134,7 +134,7 @@ if exist (decision4training, 'file') == 2
         end     
         
         seg012_score_img = seg012_combined4D_score(:,:,:,1) + seg012_combined4D_score(:,:,:,2) + seg012_combined4D_score(:,:,:,3);
-        save_nii(make_nii (seg012_score_img), [template.studyFolder '/subjects/' ID '/mri/extractedWMH/' ID '_WMH_ProbMap.nii']);
+        niftiwrite(seg012_score_img, [template.studyFolder '/subjects/' ID '/mri/extractedWMH/' ID '_WMH_ProbMap.nii']);
         
         clear seg012_combined4D_score;
         
@@ -148,7 +148,7 @@ if exist (decision4training, 'file') == 2
         thresholded_probMap (thresholded_probMap > probThr) = 1;
         probThr = sprintf ('%1.2f', probThr); % two decimals
         probThr_parts = strsplit (probThr, '.');
-        save_nii (make_nii (thresholded_probMap), [template.studyFolder '/subjects/' ID '/mri/extractedWMH/' ID '_WMH_Prob' probThr_parts{1} '_' probThr_parts{2} '.nii']);
+        niftiwrite (make_nii (thresholded_probMap), [template.studyFolder '/subjects/' ID '/mri/extractedWMH/' ID '_WMH_Prob' probThr_parts{1} '_' probThr_parts{2} '.nii']);
         
 
         %% number of focal incidences count
@@ -197,9 +197,9 @@ if exist (decision4training, 'file') == 2
 % %         size (label)
 % %         size (secondKNNlabel)
 %         % seg012_label_img_refined = seg012_label_img_refined .* thresholded_probMap;
-% %         save_nii(make_nii (seg012_label_img_refined),...
+% %         niftiwrite(make_nii (seg012_label_img_refined),...
 % %                             [template.studyFolder '/subjects/' ID '/mri/extractedWMH/' ID '_WMH_Prob' probThr_parts{1} '_' probThr_parts{2} '_refined.nii']); 
-%         save_nii(make_nii (seg012_label_img_refined),...
+%         niftiwrite(make_nii (seg012_label_img_refined),...
 %                             [template.studyFolder '/subjects/' ID '/mri/extractedWMH/' ID '_WMH_refinementKNN.nii']); 
         
         
