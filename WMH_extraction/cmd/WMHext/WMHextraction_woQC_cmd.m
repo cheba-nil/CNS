@@ -223,7 +223,7 @@ function WMHextraction_woQC_cmd (studyFolder, ...
             WMHextraction_kNNdiscovery_Step2 (k, ...
                                               ID, ...
                                               classifier, ...
-                                              template, ...
+                                              subtemp, ...
                                               probThr, ...
                                               trainingFeatures1, ...
                                               trainingFeatures2 ...
@@ -313,60 +313,61 @@ function WMHextraction_woQC_cmd (studyFolder, ...
     %         fprintf ('Download link: %s/subjects/QC/QC_final/QC_final.zip\n', studyFolder);
     % end
     
+    
+    if ~strcmp(template.name, 'native template')
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %% Bring back to native space %%
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        fprintf ('3.6 Bringing DARTEL space WMH mask to native space ...\n');
 
 
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %% Bring back to native space %%
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    fprintf ('3.6 Bringing DARTEL space WMH mask to native space ...\n');
-
-
-    parfor i = 1:Nsubj
-        T1imgNames = strsplit (T1folder(i).name, '_');   % split T1 image name, delimiter is underscore
-        ID = T1imgNames{1};   % first section is ID
-        
-        if ismember(ID, excldIDs) == 0
-            switch template.name
-            case 'existing template'
-                WMHresultsBack2NativeSpace (studyFolder, ID, spm12path);
-            case 'creating template'
-                WMHresultsBack2NativeSpace (studyFolder, ID, spm12path, '', 'creating template');
+        parfor i = 1:Nsubj
+            T1imgNames = strsplit (T1folder(i).name, '_');   % split T1 image name, delimiter is underscore
+            ID = T1imgNames{1};   % first section is ID
+            
+            if ismember(ID, excldIDs) == 0
+                switch template.name
+                case 'existing template'
+                    WMHresultsBack2NativeSpace (studyFolder, ID, spm12path);
+                case 'creating template'
+                    WMHresultsBack2NativeSpace (studyFolder, ID, spm12path, '', 'creating template');
+                end
             end
         end
-    end
 
-    % webpage display
-    % [~, NexcldIDs] = size (excldIDs);
-    % indFLAIR_cellArr = cell ((Nsubj - NexcldIDs), 1);
-    % indWMH_FLAIRspace_cellArr = cell ((Nsubj - NexcldIDs), 1);
-    indFLAIR_cellArr = cell (Nsubj, 1);
-    indWMH_FLAIRspace_cellArr = cell (Nsubj, 1);
+        % webpage display
+        % [~, NexcldIDs] = size (excldIDs);
+        % indFLAIR_cellArr = cell ((Nsubj - NexcldIDs), 1);
+        % indWMH_FLAIRspace_cellArr = cell ((Nsubj - NexcldIDs), 1);
+        indFLAIR_cellArr = cell (Nsubj, 1);
+        indWMH_FLAIRspace_cellArr = cell (Nsubj, 1);
 
-    for i = 1:Nsubj
-        T1imgNames = strsplit (T1folder(i).name, '_');   % split T1 image name, delimiter is underscore
-        ID = T1imgNames{1};   % first section is ID
-        
-        if ismember (ID, excldIDs) == 0
-            indFLAIR_cellArr{i,1} = strcat (studyFolder,'/originalImg/FLAIR/', FLAIRfolder(i).name);
+        for i = 1:Nsubj
+            T1imgNames = strsplit (T1folder(i).name, '_');   % split T1 image name, delimiter is underscore
+            ID = T1imgNames{1};   % first section is ID
             
-            indWMH_FLAIRspace_cellArr{i,1} = [studyFolder '/subjects/' ID '/mri/extractedWMH/' ID '_WMH_FLAIRspace.nii.gz'];
-            
-        else % if ID is excluded, display the FLAIR image twice
-            indFLAIR_cellArr{i,1} = strcat (studyFolder,'/originalImg/FLAIR/', FLAIRfolder(i).name);
-            
-            indWMH_FLAIRspace_cellArr{i,1} = strcat (studyFolder,'/originalImg/FLAIR/', FLAIRfolder(i).name);
+            if ismember (ID, excldIDs) == 0
+                indFLAIR_cellArr{i,1} = strcat (studyFolder,'/originalImg/FLAIR/', FLAIRfolder(i).name);
+                
+                indWMH_FLAIRspace_cellArr{i,1} = [studyFolder '/subjects/' ID '/mri/extractedWMH/' ID '_WMH_FLAIRspace.nii.gz'];
+                
+            else % if ID is excluded, display the FLAIR image twice
+                indFLAIR_cellArr{i,1} = strcat (studyFolder,'/originalImg/FLAIR/', FLAIRfolder(i).name);
+                
+                indWMH_FLAIRspace_cellArr{i,1} = strcat (studyFolder,'/originalImg/FLAIR/', FLAIRfolder(i).name);
+            end
         end
-    end
 
-    if exist ([studyFolder '/subjects/QC/QC_final_native'], 'dir') ~= 7
-        mkdir ([studyFolder '/subjects/QC'], 'QC_final_native');
-    end
+        if exist ([studyFolder '/subjects/QC/QC_final_native'], 'dir') ~= 7
+            mkdir ([studyFolder '/subjects/QC'], 'QC_final_native');
+        end
 
-    CNSP_webViewSlices_overlay (indFLAIR_cellArr, ...
-                                indWMH_FLAIRspace_cellArr, ...
-                                [studyFolder '/subjects/QC/QC_final_native'], ...
-                                'QC_final_native', ...
-                                'arch');
+        CNSP_webViewSlices_overlay (indFLAIR_cellArr, ...
+                                    indWMH_FLAIRspace_cellArr, ...
+                                    [studyFolder '/subjects/QC/QC_final_native'], ...
+                                    'QC_final_native', ...
+                                    'arch');
+    end 
 
 
     %%%%%%%%%%%%%%%%%%%%%%
