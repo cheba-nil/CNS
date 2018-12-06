@@ -10,11 +10,12 @@ usage(){
 	echo "                     -s, --studyFolder      <study_folder>          Specify study folder which contains T1 and FLAIR"
 	echo "                     -c, --currentFolder                            Use the working directory as study folder"
 	echo "                     -n, --numWorkers                            	  Number of workers"
+	echo "                     -t, --template                            	  Template choice \"native template\" or \"existing template\""
 	
 	echo ""
 	exit 1
 }
-
+template='existing template'
 
 for arg in $@
 do
@@ -57,6 +58,17 @@ do
 							fi
 
 							;;
+        -t | --template)
+				            if [ "$2" == "" ]; then
+				            	usage
+				            	exit 1
+				            else
+								template="${2}"
+								shift 2
+							fi
+
+				            ;;
+                            
         -*)
 			usage
             ;;
@@ -82,7 +94,7 @@ else
 											parpool(c,c.NumWorkers);\
 											WMHextraction_woQC_cmd('${studyFolder}',\
 																	'/usr/share/spm12',\
-																	'existing template',\
+																	'${template}',\
 																	5,\
 																	'12',\
 																	'',\
