@@ -26,8 +26,10 @@ WMHextraction_kNNdiscovery_Step1(){
 
 	DARTELtemplate=$4
 
+    nsegs=3
 
 	## set directory
+	segx="${subj_dir}/${ID}/mri/preprocessing/FAST_nonBrainRemoved_wr${ID}_*_seg_"
 	seg0="${subj_dir}/${ID}/mri/preprocessing/FAST_nonBrainRemoved_wr${ID}_*_seg_0.nii*"
 	seg1="${subj_dir}/${ID}/mri/preprocessing/FAST_nonBrainRemoved_wr${ID}_*_seg_1.nii*"
 	seg2="${subj_dir}/${ID}/mri/preprocessing/FAST_nonBrainRemoved_wr${ID}_*_seg_2.nii*"
@@ -104,19 +106,13 @@ WMHextraction_kNNdiscovery_Step1(){
 							${subj_dir}/${ID}/mri/kNN_intermediateOutput/${ID}_FLAIR_thrWM0_8_mask
 
 
+    for i in $(seq 1 $nsegs); do
 	# apply WM0.8 mask to seg012
-	${FSLDIR}/bin/fslmaths ${seg0} \
+	${FSLDIR}/bin/fslmaths "${seg}${i}.nii*" \
 							-mas ${subj_dir}/${ID}/mri/kNN_intermediateOutput/${ID}_FLAIR_thrWM0_8_mask\
-							${subj_dir}/${ID}/mri/kNN_intermediateOutput/${ID}_accurateCSFmasked_seg0
+							${subj_dir}/${ID}/mri/kNN_intermediateOutput/${ID}_accurateCSFmasked_seg$i
 
-	${FSLDIR}/bin/fslmaths ${seg1} \
-							-mas ${subj_dir}/${ID}/mri/kNN_intermediateOutput/${ID}_FLAIR_thrWM0_8_mask\
-							${subj_dir}/${ID}/mri/kNN_intermediateOutput/${ID}_accurateCSFmasked_seg1
-
-	${FSLDIR}/bin/fslmaths ${seg2} \
-							-mas ${subj_dir}/${ID}/mri/kNN_intermediateOutput/${ID}_FLAIR_thrWM0_8_mask\
-							${subj_dir}/${ID}/mri/kNN_intermediateOutput/${ID}_accurateCSFmasked_seg2
-
+    done
 
 	###########################################################################
 	###                 Create accurate individual CSF mask                 ###
@@ -151,20 +147,13 @@ WMHextraction_kNNdiscovery_Step1(){
 	####  for kNN  				      			   ####
 	###################################################
 	
+    for i in $(seq 1 $nsegs); do
 	## Only apply accurate CSF mask
-	${FSLDIR}/bin/fslmaths ${subj_dir}/${ID}/mri/kNN_intermediateOutput/${ID}_accurateCSFmasked_seg0 -mas \
+	${FSLDIR}/bin/fslmaths ${subj_dir}/${ID}/mri/kNN_intermediateOutput/${ID}_accurateCSFmasked_seg$i -mas \
 						   ${subj_dir}/${ID}/mri/kNN_intermediateOutput/inv_${ID}_dartelFLAIR_accurateCSFmask \
-			               ${subj_dir}/${ID}/mri/kNN_intermediateOutput/${ID}_accurateCSFmasked_seg0
+			               ${subj_dir}/${ID}/mri/kNN_intermediateOutput/${ID}_accurateCSFmasked_seg$i
 
-	${FSLDIR}/bin/fslmaths ${subj_dir}/${ID}/mri/kNN_intermediateOutput/${ID}_accurateCSFmasked_seg1 -mas \
-			               ${subj_dir}/${ID}/mri/kNN_intermediateOutput/inv_${ID}_dartelFLAIR_accurateCSFmask \
-			               ${subj_dir}/${ID}/mri/kNN_intermediateOutput/${ID}_accurateCSFmasked_seg1
-
-	${FSLDIR}/bin/fslmaths ${subj_dir}/${ID}/mri/kNN_intermediateOutput/${ID}_accurateCSFmasked_seg2 -mas \
-						   ${subj_dir}/${ID}/mri/kNN_intermediateOutput/inv_${ID}_dartelFLAIR_accurateCSFmask \
-						   ${subj_dir}/${ID}/mri/kNN_intermediateOutput/${ID}_accurateCSFmasked_seg2
-	
-
+    done
 
 	## normalise T1
 	# echo "Conducting intensity homogeneity on T1 ..."
@@ -172,7 +161,6 @@ WMHextraction_kNNdiscovery_Step1(){
 	${FSLDIR}/bin/fast -t 1 -n 3 -H 0.1 -I 4 -l 20.0 -g -B -o \
 							${subj_dir}/${ID}/mri/kNN_intermediateOutput/${ID}_wT1_NBTR_FAST \
 							${NBTR_wT1}
-
 
 }
 
