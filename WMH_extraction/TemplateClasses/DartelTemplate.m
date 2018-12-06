@@ -84,5 +84,7 @@ classdef DartelTemplate < AbstractTemplate
         template4
         template5
         template6
+        CNS_path
+        studyFolder
     end
 end
