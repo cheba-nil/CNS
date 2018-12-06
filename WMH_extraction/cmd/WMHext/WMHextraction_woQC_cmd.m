@@ -31,7 +31,7 @@ function WMHextraction_woQC_cmd (studyFolder, ...
     % Initialize our template
     switch dartelTemplate
         case 'existing template'
-            template = DartelTemplate(CNSP_path,ageRange);
+            template = DartelTemplate(CNSP_path,ageRange,studyFolder);
         case 'creating template'
             template = CohortTemplate(strcat(studyFolder,'/subjects'));
         case 'native template'
