@@ -93,9 +93,9 @@ function generateFeatures_forPrediction (ID, subj_dir, template)
     niftiwrite((seg2ClustersLableMatrix),strcat(subj_dir, '/', ID, '/mri/extractedWMH/temp/', ID, '_seg2.nii'));
 
     % copy over the correct geometry
-    system(strcat('$FSLDIR/fslcpgeom ', csfMasked_seg0_path, ' ', subj_dir, '/', ID, '/mri/extractedWMH/temp/', ID, '_seg0.nii'));
-    system(strcat('$FSLDIR/fslcpgeom ', csfMasked_seg0_path, ' ', subj_dir, '/', ID, '/mri/extractedWMH/temp/', ID, '_seg1.nii'));
-    system(strcat('$FSLDIR/fslcpgeom ', csfMasked_seg0_path, ' ', subj_dir, '/', ID, '/mri/extractedWMH/temp/', ID, '_seg2.nii'));
+    system(['$FSLDIR/bin/fslcpgeom ', csfMasked_seg0_path, ' ', subj_dir, '/', ID, '/mri/extractedWMH/temp/', ID, '_seg0.nii']);
+    system(['$FSLDIR/bin/fslcpgeom ', csfMasked_seg0_path, ' ', subj_dir, '/', ID, '/mri/extractedWMH/temp/', ID, '_seg1.nii']);
+    system(['$FSLDIR/bin/fslcpgeom ', csfMasked_seg0_path, ' ', subj_dir, '/', ID, '/mri/extractedWMH/temp/', ID, '_seg2.nii']);
 
 
     % imshow3Dfull (seg2ClustersLableMatrix);
