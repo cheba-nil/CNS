@@ -92,13 +92,6 @@ WMHextraction_kNNdiscovery_Step1(){
 	wmthr=`bc <<< "1.1 * ${mean_flair_in_wm0_8}"`
 
 
-	# apply the threshold to only the disconnectLR mask
-	# ${FSLDIR}/bin/fslmaths ${dartelFLAIR} \
-	# 						-mas ${CNSP_path}/Templates/DARTEL_other_templates/DARTEL_disconnectLR \
-	# 						-uthr ${wmthr} \
-	# 						-binv \
-	# 						${subj_dir}/${ID}/mri/kNN_intermediateOutput/${ID}_FLAIR_thrWM0_8_mask
-
 	# apply the threshold to the whole brain
 	${FSLDIR}/bin/fslmaths ${dartelFLAIR} \
 							-thr ${wmthr} \
@@ -133,15 +126,6 @@ WMHextraction_kNNdiscovery_Step1(){
 							${subj_dir}/${ID}/mri/kNN_intermediateOutput/inv_${ID}_dartelFLAIR_accurateCSFmask	
 
 
-	#########################
-	### Apply 0.8 WM mask ###
-	#########################
-	# ${FSLDIR}/bin/fslmaths ${subj_dir}/${ID}/mri/kNN_intermediateOutput/inv_${ID}_dartelFLAIR_accurateCSFmask \
-	# 					   -mas ${wm_0_8_mask} \
-	# 					   ${subj_dir}/${ID}/mri/kNN_intermediateOutput/inv_${ID}_dartelFLAIR_accurateCSFmask
-
-
-	
 	###################################################
 	####  Apply the accurate CSF mask to seg0,1,2, ####
 	####  for kNN  				      			   ####

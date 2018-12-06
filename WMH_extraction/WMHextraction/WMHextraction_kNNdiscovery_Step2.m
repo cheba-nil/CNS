@@ -122,60 +122,8 @@ if exist (decision4training, 'file') == 2
         niftiwrite (thresholded_probMap, [template.studyFolder '/subjects/' ID '/mri/extractedWMH/' ID '_WMH_Prob' probThr_parts{1} '_' probThr_parts{2} '.nii']);
         system(['$FSLDIR/bin/fslcpgeom ' template.studyFolder '/subjects/' ID '/mri/extractedWMH/temp/' ID '_seg0.nii' ...
                ' ' template.studyFolder '/subjects/' ID '/mri/extractedWMH/' ID '_WMH_Prob' probThr_parts{1} '_' probThr_parts{2} '.nii']);
-        
-
-        %% number of focal incidences count
-        % fprintf ('Counting number of incidences ...');
-
-        % WMHclusters = bwconncomp(thresholded_probMap, 6);
-        % whlBrn_NoI = WMHclusters.NumObjects; % whole brain number of incidences
-
-        % load lobar map
 
         clear thresholded_probMap;
-
-        %% Refinement with specified ProbThr
-%         fprintf (['Generating WMH map with specified probability threshold and refinement applied for ' ID ' ...\n']);
-%         if (nargin == 10) || ((nargin == 11) && strcmp(varargin{1}, 'noGenF'))
-%             [secondKNNlabel,secondKNNscore] = WMHextraction_postprocessing_refinement (template.studyFolder,ID,label,feature4training,decision4training, k, trainingFeatures2);
-%         elseif nargin > 11 && strcmp(varargin{1}, 'noGenF')
-%             [secondKNNlabel,secondKNNscore] = WMHextraction_postprocessing_refinement (template.studyFolder,ID,label,feature4training,decision4training, k, trainingFeatures2, varargin{2:end});  % same setting as the first kNN
-%         elseif nargin > 10 && ~strcmp(varargin{1}, 'noGenF')
-%             [secondKNNlabel,secondKNNscore] = WMHextraction_postprocessing_refinement (template.studyFolder,ID,label,feature4training,decision4training, k, trainingFeatures2, varargin{:});
-%         end
-%             
-%         label_cell_refined {1} = secondKNNlabel (1:seg0_max);
-%         label_cell_refined {2} = secondKNNlabel ((seg0_max+1):(seg0_max+seg1_max));
-%         label_cell_refined {3} = secondKNNlabel ((seg0_max+seg1_max+1):(seg0_max+seg1_max+seg2_max));
-%         for k = 1:3
-%             for t = 1:seg012_max(1,k)
-%                 [h, l, s] = ind2sub(size(seg012_combined4D_label_refined(:,:,:,k)),find(seg012_combined4D_label_refined(:,:,:,k) == t)); % find index in 3D array
-%                 [h_Nrow,~] = size(h);
-%    
-%                 for u = 1: h_Nrow        
-%                     % ------ refined image ------
-%                     if strcmp(label_cell_refined{k}{t},'Yes')
-%                         seg012_combined4D_label_refined(h(u),l(u),s(u),k) = 1;                   
-%                     else
-%                         seg012_combined4D_label_refined(h(u),l(u),s(u),k) = 0;
-%                     end                    
-%                 end
-%             end
-%         end
-%                         
-%         seg012_label_img_refined = seg012_combined4D_label_refined(:,:,:,1) + seg012_combined4D_label_refined(:,:,:,2) + seg012_combined4D_label_refined(:,:,:,3);
-% %         size (seg012_label_img_refined)
-% %         max(nonzeros(seg012_label_img_refined))
-% %         size (thresholded_probMap)
-% %         size (label)
-% %         size (secondKNNlabel)
-%         % seg012_label_img_refined = seg012_label_img_refined .* thresholded_probMap;
-% %         niftiwrite(make_nii (seg012_label_img_refined),...
-% %                             [template.studyFolder '/subjects/' ID '/mri/extractedWMH/' ID '_WMH_Prob' probThr_parts{1} '_' probThr_parts{2} '_refined.nii']); 
-%         niftiwrite(make_nii (seg012_label_img_refined),...
-%                             [template.studyFolder '/subjects/' ID '/mri/extractedWMH/' ID '_WMH_refinementKNN.nii']); 
-        
-        
         
     else
         fprintf ('%s\n', 'ERROR: no feature_forTraining.txt');

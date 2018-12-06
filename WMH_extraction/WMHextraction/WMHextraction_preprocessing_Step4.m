@@ -178,14 +178,6 @@ function WMHextraction_preprocessing_Step4 (studyFolder, template, coregExcldLis
         cmd_mvTemplate_1 = ['if [ ! -d ' studyFolder '/subjects/DARTELtemplate ]; then mkdir ' studyFolder '/subjects/DARTELtemplate; fi'];
         system (cmd_mvTemplate_1);
         % SubjDirExistingFolders = dir (strcat(studyFolder, '/subjects'));
-        % firstID = SubjDirExistingFolders(3).name;
-        % cmd_mvTemplate_2 = ['mv ' studyFolder '/subjects/' firstID '/mri/preprocessing/Template_0.nii ' studyFolder '/subjects/DARTELtemplate'];
-        % cmd_mvTemplate_3 = ['mv ' studyFolder '/subjects/' firstID '/mri/preprocessing/Template_1.nii ' studyFolder '/subjects/DARTELtemplate'];
-        % cmd_mvTemplate_4 = ['mv ' studyFolder '/subjects/' firstID '/mri/preprocessing/Template_2.nii ' studyFolder '/subjects/DARTELtemplate'];
-        % cmd_mvTemplate_5 = ['mv ' studyFolder '/subjects/' firstID '/mri/preprocessing/Template_3.nii ' studyFolder '/subjects/DARTELtemplate'];
-        % cmd_mvTemplate_6 = ['mv ' studyFolder '/subjects/' firstID '/mri/preprocessing/Template_4.nii ' studyFolder '/subjects/DARTELtemplate'];
-        % cmd_mvTemplate_7 = ['mv ' studyFolder '/subjects/' firstID '/mri/preprocessing/Template_5.nii ' studyFolder '/subjects/DARTELtemplate'];
-        % cmd_mvTemplate_8 = ['mv ' studyFolder '/subjects/' firstID '/mri/preprocessing/Template_6.nii ' studyFolder '/subjects/DARTELtemplate'];
         cmd_mvTemplate_2 = ['mv ' studyFolder '/subjects/*/mri/preprocessing/Template_0.nii ' studyFolder '/subjects/DARTELtemplate'];
         cmd_mvTemplate_3 = ['mv ' studyFolder '/subjects/*/mri/preprocessing/Template_1.nii ' studyFolder '/subjects/DARTELtemplate'];
         cmd_mvTemplate_4 = ['mv ' studyFolder '/subjects/*/mri/preprocessing/Template_2.nii ' studyFolder '/subjects/DARTELtemplate'];
