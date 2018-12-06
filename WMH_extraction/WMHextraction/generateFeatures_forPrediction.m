@@ -1,27 +1,21 @@
 function generateFeatures_forPrediction (ID, subj_dir, template)
 
+    nsegs=3;
+
     tmpf = strcat (subj_dir, '/', ID, '/mri/kNN_intermediateOutput/tmp.nii.gz');
-    csfMasked_seg0_path = strcat (subj_dir, '/', ID, '/mri/kNN_intermediateOutput/', ID, '_accurateCSFmasked_seg0.nii.gz');
-    csfMasked_seg1_path = strcat (subj_dir, '/', ID, '/mri/kNN_intermediateOutput/', ID, '_accurateCSFmasked_seg1.nii.gz');
-    csfMasked_seg2_path = strcat (subj_dir, '/', ID, '/mri/kNN_intermediateOutput/', ID, '_accurateCSFmasked_seg2.nii.gz');
 
-    %reslice_nii(csfMasked_seg0_path,tmpf);
-    %movefile(tmpf,csfMasked_seg0_path);
-    %reslice_nii(csfMasked_seg1_path,tmpf);
-    %movefile(tmpf,csfMasked_seg1_path);
-    %reslice_nii(csfMasked_seg2_path,tmpf);
-    %movefile(tmpf,csfMasked_seg2_path);
-
-    seg0_nii_img_ventricleRemoved = niftiread (csfMasked_seg0_path);
-    seg1_nii_img_ventricleRemoved = niftiread (csfMasked_seg1_path);
-    seg2_nii_img_ventricleRemoved = niftiread (csfMasked_seg2_path);
+    csfMasked_seg_paths = strings(nsegs,1);
+    novent_segs = strings(nsegs,1);
+    for i = 1:nsegs
+        csfMasked_seg_paths(i) = strcat (subj_dir, '/', ID, ...
+            '/mri/kNN_intermediateOutput/',ID, '_accurateCSFmasked_seg',i-1,'.nii.gz');
+        novent_segs(i) = niftiread(csfMasked_seg_paths(i));
+    end
 
     flair_path_char = ls (strcat (subj_dir, '/', ID, '/mri/preprocessing/FAST_nonBrainRemoved_wr', ID, '_*_restore.nii.gz'));
     flair_path_cell = cellstr(flair_path_char);
     flair_path = flair_path_cell{1};
 
-    %reslice_nii(flair_path,tmpf);
-    %movefile(tmpf,flair_path);
     flair_nii_img = niftiread (flair_path);
 
     % used intensity normalised T1
@@ -29,41 +23,20 @@ function generateFeatures_forPrediction (ID, subj_dir, template)
     t1_path_cell = cellstr (t1_path_char);
     t1_path = t1_path_cell{1};
 
-    %reslice_nii(t1_path,tmpf);
-    %movefile(tmpf,t1_path);
     t1_nii_img = niftiread (t1_path);
 
-    %reslice_nii(template.gm_prob_thr,tmpf);
-    %movefile(tmpf,template.gm_prob_thr);
     GM_average_mask_nii_img = niftiread(template.gm_prob_thr);
 
-    %reslice_nii(template.wm_prob_thr,tmpf);
-    %movefile(tmpf,template.wm_prob_thr);
     WM_average_mask_nii_img = niftiread(template.wm_prob_thr);
 
-    %reslice_nii(template.wm_prob,tmpf);
-    %movefile(tmpf,template.wm_prob);
     WM_prob_map_nii_img = niftiread(template.wm_prob);
 
-    %reslice_nii(template.gm_prob,tmpf);
-    %movefile(tmpf,template.gm_prob);
     GM_prob_map_nii_img = niftiread(template.gm_prob);
 
-    %reslice_nii(template.csf_prob,tmpf);
-    %movefile(tmpf,template.csf_prob);
     CSF_prob_map_nii_img = niftiread(template.csf_prob);
 
-    %reslice_nii(template.ventricles,tmpf);
-    %movefile(tmpf,template.ventricles);
     Vent_distanceMap_nii_img = niftiread(template.ventricles);
                                 
-                                
-    % indWMnoCSF_path_char = ls (strcat (subj_dir, '/', ID, '/mri/kNN_intermediateOutput/', ID, '_accurateCSFmasked_OATSaverageWM.nii.gz'));
-    % indWMnoCSF_path_cell = cellstr (indWMnoCSF_path_char);
-    % indWMnoCSF_path = indWMnoCSF_path_cell{1};
-    % individualAccCSFmasked_WMaverageMaskNii = niftiread (indWMnoCSF_path);
-
-
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % WM/GM region mean intensity on T1 and FLAIR %
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -80,26 +53,22 @@ function generateFeatures_forPrediction (ID, subj_dir, template)
     %%%%%%%%%%%%%%%%%
     % find clusters %
     %%%%%%%%%%%%%%%%%
-    seg0Clusters = bwconncomp(seg0_nii_img_ventricleRemoved, 6);  % 6-connected neighborhood
-    seg1Clusters = bwconncomp(seg1_nii_img_ventricleRemoved, 6);
-    seg2Clusters = bwconncomp(seg2_nii_img_ventricleRemoved, 6);
-    seg_NumOfClusters = cat (2, seg0Clusters.NumObjects, seg1Clusters.NumObjects, seg2Clusters.NumObjects);
+    segClusterLabels = cell(nsegs,1);
+    for i = 1:nsegs
+        segClusters(i) = bwconncomp(novent_segs(i),6); % 6-connected neighborhood
+        segClusterLabels{i} = cast(labelmatrix(segClusters(i),'double'));
+        niftiwrite(segClusterLabels{i}, strcat(subj_dir, '/', ID, ...
+            '/mri/extractedWMH/temp/', ID, '_seg',i-1,'.nii'));
+        % copy over the correct geometry
+        system(['$FSLDIR/bin/fslcpgeom ', csfMasked_seg_paths(i), ' ', subj_dir, '/', ...
+                ID, '/mri/extractedWMH/temp/', ID, '_seg',i-1,'.nii']);
+    end
 
-    seg0ClustersLableMatrix = cast(labelmatrix (seg0Clusters),'double'); % lable each cluster (first cluster as 1, second as 2...)
-    seg1ClustersLableMatrix = cast(labelmatrix (seg1Clusters),'double');
-    seg2ClustersLableMatrix = cast(labelmatrix (seg2Clusters),'double');
-    niftiwrite((seg0ClustersLableMatrix),strcat(subj_dir, '/', ID, '/mri/extractedWMH/temp/', ID, '_seg0.nii'));
-    niftiwrite((seg1ClustersLableMatrix),strcat(subj_dir, '/', ID, '/mri/extractedWMH/temp/', ID, '_seg1.nii'));
-    niftiwrite((seg2ClustersLableMatrix),strcat(subj_dir, '/', ID, '/mri/extractedWMH/temp/', ID, '_seg2.nii'));
-
-    % copy over the correct geometry
-    system(['$FSLDIR/bin/fslcpgeom ', csfMasked_seg0_path, ' ', subj_dir, '/', ID, '/mri/extractedWMH/temp/', ID, '_seg0.nii']);
-    system(['$FSLDIR/bin/fslcpgeom ', csfMasked_seg0_path, ' ', subj_dir, '/', ID, '/mri/extractedWMH/temp/', ID, '_seg1.nii']);
-    system(['$FSLDIR/bin/fslcpgeom ', csfMasked_seg0_path, ' ', subj_dir, '/', ID, '/mri/extractedWMH/temp/', ID, '_seg2.nii']);
-
-
-    % imshow3Dfull (seg2ClustersLableMatrix);
-    allSegClustersLableMatrix = cat (4, seg0ClustersLableMatrix, seg1ClustersLableMatrix, seg2ClustersLableMatrix); % concatenate cluster lable maps to a vector
+    % imshow3Dfull (seg2ClustersLabelMatrix);
+    allSegClusterLabelMatrix = segClusterLabels{1};
+    for i = 2:nsegs
+        allSegClusterLabelmatrix = cat(4,allSegClusterLabelMatrix,segClusterLabels{i});
+    end
     %clusterMask (size(nii_img),Clusters.NumObjects);
 
 
@@ -121,15 +90,21 @@ function generateFeatures_forPrediction (ID, subj_dir, template)
     %%%%%%%%%%%%%%%%%%%%%%
     % calculate features %
     %%%%%%%%%%%%%%%%%%%%%%
+    totalClusters=0
+    for i = 1:nsegs
+        totalClusters = total + segClusters(i).NumObjects;
+    end
 
-    featureCellArr = cell ((seg_NumOfClusters(1,1)+seg_NumOfClusters(1,2)+seg_NumOfClusters(1,3)), 12);
-    lookUpCellArr = cell ((seg_NumOfClusters(1,1)+seg_NumOfClusters(1,2)+seg_NumOfClusters(1,3)), 2);
+    featureCellArr = cell ((totalClusters, 12);
+    lookUpCellArr = cell ((totalClusters, 2);
 
-    for j = 1:3 % seg0-2
-        fprintf ('UBO Detector: calculating features for ID %s (%d clusters in Seg%d) ...\n', ID, seg_NumOfClusters(1,j), (j-1));
-        for i = 1:seg_NumOfClusters(1,j) % exhaust all clusters
+    for j = 1:nsegs % seg0-2
+        fprintf ('UBO Detector: calculating features for ID %s (%d clusters in Seg%d) ...\n', ...
+            ID, segClusters(j).NumObjects, (j-1));
+%        for i = 1:seg_NumOfClusters(1,j) % exhaust all clusters
+        for i = 1:segClusters(j).NumObjects % exhaust all clusters
 
-            clusterMask = cast ((allSegClustersLableMatrix (:,:,:,j) == i), 'double');
+            clusterMask = cast ((allSegClustersLabelMatrix (:,:,:,j) == i), 'double');
             % feature5 = nnz(clusterMask);  %%%%%%%%%%%%%%% FEATURE 5 %%%%%%%%%%%%%%%
             
             clusterMasked_flair = clusterMask .* flair_nii_img; % apply cluster mask to FLAIR
@@ -173,57 +148,25 @@ function generateFeatures_forPrediction (ID, subj_dir, template)
             
     %         disp (clusterMasked_flair_mean);      
             
-            if j == 1
-                % seg0
-                featureCellArr{i,1} = feature1;
-                featureCellArr{i,2} = feature2;
-                featureCellArr{i,3} = feature3;
-                featureCellArr{i,4} = feature4;
-                featureCellArr{i,5} = feature5;
-                featureCellArr{i,6} = feature6;
-                featureCellArr{i,7} = feature7;
-                featureCellArr{i,8} = feature8;
-                featureCellArr{i,9} = feature9;
-                featureCellArr{i,10} = feature10;
-                featureCellArr{i,11} = feature11;
-                featureCellArr{i,12} = feature12;
-                lookUpCellArr{i,1} = 0;
-                lookUpCellArr{i,2} = i;
-            elseif j == 2
-                % seg1
-                featureCellArr{(i+seg_NumOfClusters(1,1)),1} = feature1;
-                featureCellArr{(i+seg_NumOfClusters(1,1)),2} = feature2;
-                featureCellArr{(i+seg_NumOfClusters(1,1)),3} = feature3;
-                featureCellArr{(i+seg_NumOfClusters(1,1)),4} = feature4;
-                featureCellArr{(i+seg_NumOfClusters(1,1)),5} = feature5;
-                featureCellArr{(i+seg_NumOfClusters(1,1)),6} = feature6;
-                featureCellArr{(i+seg_NumOfClusters(1,1)),7} = feature7;
-                featureCellArr{(i+seg_NumOfClusters(1,1)),8} = feature8;
-                featureCellArr{(i+seg_NumOfClusters(1,1)),9} = feature9;
-                featureCellArr{(i+seg_NumOfClusters(1,1)),10} = feature10;
-                featureCellArr{(i+seg_NumOfClusters(1,1)),11} = feature11;
-                featureCellArr{(i+seg_NumOfClusters(1,1)),12} = feature12;
-                lookUpCellArr{(i+seg_NumOfClusters(1,1)),1} = 1;
-                lookUpCellArr{(i+seg_NumOfClusters(1,1)),2} = i;            
-            elseif j == 3
-                % seg2
-                featureCellArr{(i+seg_NumOfClusters(1,1)+seg_NumOfClusters(1,2)),1} = feature1;
-                featureCellArr{(i+seg_NumOfClusters(1,1)+seg_NumOfClusters(1,2)),2} = feature2;
-                featureCellArr{(i+seg_NumOfClusters(1,1)+seg_NumOfClusters(1,2)),3} = feature3;
-                featureCellArr{(i+seg_NumOfClusters(1,1)+seg_NumOfClusters(1,2)),4} = feature4;
-                featureCellArr{(i+seg_NumOfClusters(1,1)+seg_NumOfClusters(1,2)),5} = feature5;
-                featureCellArr{(i+seg_NumOfClusters(1,1)+seg_NumOfClusters(1,2)),6} = feature6;
-                featureCellArr{(i+seg_NumOfClusters(1,1)+seg_NumOfClusters(1,2)),7} = feature7;
-                featureCellArr{(i+seg_NumOfClusters(1,1)+seg_NumOfClusters(1,2)),8} = feature8;
-                featureCellArr{(i+seg_NumOfClusters(1,1)+seg_NumOfClusters(1,2)),9} = feature9;
-                featureCellArr{(i+seg_NumOfClusters(1,1)+seg_NumOfClusters(1,2)),10} = feature10;
-                featureCellArr{(i+seg_NumOfClusters(1,1)+seg_NumOfClusters(1,2)),11} = feature11;
-                featureCellArr{(i+seg_NumOfClusters(1,1)+seg_NumOfClusters(1,2)),12} = feature12;
-                lookUpCellArr{(i+seg_NumOfClusters(1,1)+seg_NumOfClusters(1,2)),1} = 2;
-                lookUpCellArr{(i+seg_NumOfClusters(1,1)+seg_NumOfClusters(1,2)),2} = i; 
-            end
-
-                   
+            % calculate our offset
+            offset = 0;
+            for k = 1:j-1
+                offset = segClusters(k).NumObjects;
+            end 
+            featureCellArr{offset+i,1} = feature1;
+            featureCellArr{offset+i,2} = feature2;
+            featureCellArr{offset+i,3} = feature3;
+            featureCellArr{offset+i,4} = feature4;
+            featureCellArr{offset+i,5} = feature5;
+            featureCellArr{offset+i,6} = feature6;
+            featureCellArr{offset+i,7} = feature7;
+            featureCellArr{offset+i,8} = feature8;
+            featureCellArr{offset+i,9} = feature9;
+            featureCellArr{offset+i,10} = feature10;
+            featureCellArr{offset+i,11} = feature11;
+            featureCellArr{offset+i,12} = feature12;
+            lookUpCellArr{offset+i,1} = j-1;
+            lookUpCellArr{offset+i,2} = i;
         end
     end
 

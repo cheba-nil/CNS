@@ -7,6 +7,8 @@
 
 function WMHextraction_kNNdiscovery_Step2 (k, ID, classifier, template, probThr, trainingFeatures1, trainingFeatures2, varargin)
 
+nsegs=3;
+
 switch classifier
     case 'built-in'
         feature4training = strcat (template.CNS_path, '/WMH_extraction/4kNN_classifier/feature_forTraining.txt');
@@ -55,28 +57,22 @@ if exist (decision4training, 'file') == 2
         
 
         %% saved seg012 clusters with label ID
-        seg0_lablID = niftiread([template.studyFolder '/subjects/' ID '/mri/extractedWMH/temp/' ID '_seg0.nii']);
-        seg1_lablID = niftiread([template.studyFolder '/subjects/' ID '/mri/extractedWMH/temp/' ID '_seg1.nii']);
-        seg2_lablID = niftiread([template.studyFolder '/subjects/' ID '/mri/extractedWMH/temp/' ID '_seg2.nii']);
+        seg_lablIDs = cell(nsegs,1)
+        for i = 1:nsegs
+            seg_lablIDs{i} = nifitread([template.studyFolder,'/subjects', ...
+                ID,'/mri/extractedWMH/temp/',ID,'_seg',i-1,'.nii']);
+            seg_max(i) = max(max(max(seg_lablIDs{i})));
+        end
         
-        %seg0_lablID = seg0_lablID_struct.img;
-        %seg1_lablID = seg1_lablID_struct.img;
-        %seg2_lablID = seg2_lablID_struct.img;
         
-        clear seg0_lablID_struct;
-        clear seg1_lablID_struct;
-        clear seg2_lablID_struct;
+        seg012_max = seg_max(1); 
+        seg012_combined4D = seg_lablIDs{1};
+        for i = 2:nsegs
+            seg012_max = cat (2, seg012_max, seg_max(i));
+            seg012_combined4D = cat (4, seg012_combined4D, seg_lablIDs{i});
+        end
         
-        seg0_max = max(max(max(seg0_lablID)));
-        seg1_max = max(max(max(seg1_lablID)));
-        seg2_max = max(max(max(seg2_lablID)));
-        
-        seg012_max = cat (2, seg0_max, seg1_max, seg2_max);
-        seg012_combined4D = cat (4, seg0_lablID, seg1_lablID, seg2_lablID);
-        
-        clear seg0_lablID;
-        clear seg1_lablID;
-        clear seg2_lablID;
+        clear seg_lablIDs;
         
         
 %         seg012_combined4D_label = seg012_combined4D; % duplicate for assigning different values
@@ -84,45 +80,16 @@ if exist (decision4training, 'file') == 2
         
         clear seg012_combined4D;
         
-%         seg012_combined4D_label_refined = seg012_combined4D; % duplicate for assigning different values
-%         seg012_combined4D_score_refined = seg012_combined4D;
-        
-        
-        %% label map (i.e. prob thr = 0.5)
-%         fprintf (['Generating WMH label map (i.e. probability threshold = 0.5) for ' ID ' ...\n']);       
-%         label_cell {1} = label (1:seg0_max);
-%         label_cell {2} = label ((seg0_max+1):(seg0_max+seg1_max));
-%         label_cell {3} = label ((seg0_max+seg1_max+1):(seg0_max+seg1_max+seg2_max));
-%         
-%         %--- WM prob map
-%         %         WMprobMap_struct = load_nii ([template.CNS_path '/Templates/DARTEL_GM_WM_CSF_prob_maps/65to75/DARTEL_WM_prob_map.nii.gz']);
-%         %         WMprobMap = cast (WMprobMap_struct.img,'double');
-%         for a = 1:3
-%             for b = 1:seg012_max(1,a)
-%                 [x,y,z] = ind2sub(size(seg012_combined4D_label(:,:,:,a)),find(seg012_combined4D_label(:,:,:,a) == b)); % find index in 3D array
-%                 [x_Nrow,x_Ncol] = size(x);
-%    
-%                 for c = 1: x_Nrow
-%                     if strcmp(label_cell{a}{b}, 'Yes')
-%                        seg012_combined4D_label(x(c),y(c),z(c),a) = 1;
-%                     else
-%                        seg012_combined4D_label(x(c),y(c),z(c),a) = 0;
-%                     end
-%                 end
-%             end
-%         end
-%         
-%         seg012_label_img = seg012_combined4D_label(:,:,:,1) + seg012_combined4D_label(:,:,:,2) + seg012_combined4D_label(:,:,:,3);
-%         niftiwrite(make_nii (seg012_label_img), [template.studyFolder '/subjects/' ID '/mri/extractedWMH/' ID '_WMH_LablMap.nii']);
-                        
-                        
         %% probability map
         fprintf (['UBO Detector: generating WMH score map (i.e. WMH probability map) for ' ID ' ...\n']);
-        score_cell {1} = score (1:seg0_max,2);
-        score_cell {2} = score ((seg0_max+1):(seg0_max+seg1_max),2);
-        score_cell {3} = score ((seg0_max+seg1_max+1):(seg0_max+seg1_max+seg2_max),2);
+
+        offset = 0;
+        for i = 1:nsegs
+            score_cell {i} = score (1+offset:offset+seg_max(i),2);
+            offset = offset + seg_max(i);
+        end
         
-        for p = 1:3
+        for p = 1:nsegs
             for m = 1:seg012_max(1,p)
                 [r,c,v] = ind2sub(size(seg012_combined4D_score(:,:,:,p)),find(seg012_combined4D_score(:,:,:,p) == m)); % find index in 3D array
                 [r_Nrow,~] = size(r);
