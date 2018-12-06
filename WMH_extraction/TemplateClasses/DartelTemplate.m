@@ -6,7 +6,10 @@
 
 classdef DartelTemplate < AbstractTemplate
     methods
-        function template = DartelTemplate(CNS_path, age_range);
+        function template = DartelTemplate(CNS_path, age_range, studyFolder);
+            template.CNS_path = CNS_path;
+            template.studyFolder = studyFolder;
+
             template.name = 'existing template';
 
             template.brain_mask = strcat( ...
