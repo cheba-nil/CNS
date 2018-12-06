@@ -11,6 +11,7 @@ WMHextraction_SkullStriping_and_FAST(){
 	brain_mask=$5
 	DARTELtemplate=$6
 	gm_prob=$7
+    nsegs=3
 
     # we still need to create the brain mask if creating a new template
 	if [ "${DARTELtemplate}" = "creating_template" ]; then
@@ -35,7 +36,7 @@ WMHextraction_SkullStriping_and_FAST(){
 #							-mas ${CNSP_path}/Templates/DARTEL_brain_mask/DARTEL_brain_mask \
 #							${subjectsDir}/${ID}/mri/preprocessing/nonBrainRemoved_w${T1}
 
-	${FSLDIR}/bin/fast -t 1 -n 3 -H 0.1 -I 4 -l 20.0 -g -B -o \
+	${FSLDIR}/bin/fast -t 1 -n $nsegs -H 0.1 -I 4 -l 20.0 -g -B -o \
 							${subjectsDir}/${ID}/mri/preprocessing/FAST_nonBrainRemoved_wr${FLAIR} \
 							${subjectsDir}/${ID}/mri/preprocessing/nonBrainRemoved_wr${FLAIR}
 
