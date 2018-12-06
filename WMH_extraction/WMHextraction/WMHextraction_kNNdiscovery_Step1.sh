@@ -29,10 +29,7 @@ WMHextraction_kNNdiscovery_Step1(){
     nsegs=3
 
 	## set directory
-	segx="${subj_dir}/${ID}/mri/preprocessing/FAST_nonBrainRemoved_wr${ID}_*_seg_"
-	seg0="${subj_dir}/${ID}/mri/preprocessing/FAST_nonBrainRemoved_wr${ID}_*_seg_0.nii*"
-	seg1="${subj_dir}/${ID}/mri/preprocessing/FAST_nonBrainRemoved_wr${ID}_*_seg_1.nii*"
-	seg2="${subj_dir}/${ID}/mri/preprocessing/FAST_nonBrainRemoved_wr${ID}_*_seg_2.nii*"
+	segx="${subj_dir}/${ID}/mri/preprocessing/FAST_nonBrainRemoved_wr${ID}_FLAIR_seg_"
 
 	csfSeg="${subj_dir}/${ID}/mri/preprocessing/wc3${ID}_*.nii*"
 
@@ -99,9 +96,9 @@ WMHextraction_kNNdiscovery_Step1(){
 							${subj_dir}/${ID}/mri/kNN_intermediateOutput/${ID}_FLAIR_thrWM0_8_mask
 
 
-    for i in $(seq 1 $nsegs); do
+    for i in $(seq 0 $(( nsegs - 1 )) ); do
 	# apply WM0.8 mask to seg012
-	${FSLDIR}/bin/fslmaths "${seg}${i}.nii*" \
+	${FSLDIR}/bin/fslmaths ${segx}${i} \
 							-mas ${subj_dir}/${ID}/mri/kNN_intermediateOutput/${ID}_FLAIR_thrWM0_8_mask\
 							${subj_dir}/${ID}/mri/kNN_intermediateOutput/${ID}_accurateCSFmasked_seg$i
 
@@ -131,7 +128,7 @@ WMHextraction_kNNdiscovery_Step1(){
 	####  for kNN  				      			   ####
 	###################################################
 	
-    for i in $(seq 1 $nsegs); do
+    for i in $(seq 0 $(( nsegs - 1 )) ); do
 	## Only apply accurate CSF mask
 	${FSLDIR}/bin/fslmaths ${subj_dir}/${ID}/mri/kNN_intermediateOutput/${ID}_accurateCSFmasked_seg$i -mas \
 						   ${subj_dir}/${ID}/mri/kNN_intermediateOutput/inv_${ID}_dartelFLAIR_accurateCSFmask \
