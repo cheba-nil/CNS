@@ -5,11 +5,11 @@ function generateFeatures_forPrediction (ID, subj_dir, template)
     tmpf = strcat (subj_dir, '/', ID, '/mri/kNN_intermediateOutput/tmp.nii.gz');
 
     csfMasked_seg_paths = strings(nsegs,1);
-    novent_segs = strings(nsegs,1);
+    novent_segs = cell(nsegs,1);
     for i = 1:nsegs
         csfMasked_seg_paths(i) = strcat (subj_dir, '/', ID, ...
-            '/mri/kNN_intermediateOutput/',ID, '_accurateCSFmasked_seg',i-1,'.nii.gz');
-        novent_segs(i) = niftiread(csfMasked_seg_paths(i));
+            '/mri/kNN_intermediateOutput/',ID, '_accurateCSFmasked_seg',string(i-1),'.nii.gz');
+        novent_segs{i} = niftiread(csfMasked_seg_paths(i));
     end
 
     flair_path_char = ls (strcat (subj_dir, '/', ID, '/mri/preprocessing/FAST_nonBrainRemoved_wr', ID, '_*_restore.nii.gz'));
@@ -55,19 +55,18 @@ function generateFeatures_forPrediction (ID, subj_dir, template)
     %%%%%%%%%%%%%%%%%
     segClusterLabels = cell(nsegs,1);
     for i = 1:nsegs
-        segClusters(i) = bwconncomp(novent_segs(i),6); % 6-connected neighborhood
-        segClusterLabels{i} = cast(labelmatrix(segClusters(i),'double'));
+        segClusters(i) = bwconncomp(novent_segs{i},6); % 6-connected neighborhood
+        segClusterLabels{i} = cast(labelmatrix(segClusters(i)),'double');
         niftiwrite(segClusterLabels{i}, strcat(subj_dir, '/', ID, ...
-            '/mri/extractedWMH/temp/', ID, '_seg',i-1,'.nii'));
+            '/mri/extractedWMH/temp/', ID, '_seg',string(i-1),'.nii'));
         % copy over the correct geometry
-        system(['$FSLDIR/bin/fslcpgeom ', csfMasked_seg_paths(i), ' ', subj_dir, '/', ...
-                ID, '/mri/extractedWMH/temp/', ID, '_seg',i-1,'.nii']);
+        system(['$FSLDIR/bin/fslcpgeom ' char(csfMasked_seg_paths(i)) ' ' subj_dir '/' ID '/mri/extractedWMH/temp/' ID '_seg' char(string(i-1))]);
     end
 
     % imshow3Dfull (seg2ClustersLabelMatrix);
     allSegClusterLabelMatrix = segClusterLabels{1};
     for i = 2:nsegs
-        allSegClusterLabelmatrix = cat(4,allSegClusterLabelMatrix,segClusterLabels{i});
+        allSegClusterLabelMatrix = cat(4,allSegClusterLabelMatrix,segClusterLabels{i});
     end
     %clusterMask (size(nii_img),Clusters.NumObjects);
 
@@ -90,13 +89,13 @@ function generateFeatures_forPrediction (ID, subj_dir, template)
     %%%%%%%%%%%%%%%%%%%%%%
     % calculate features %
     %%%%%%%%%%%%%%%%%%%%%%
-    totalClusters=0
+    totalClusters=0;
     for i = 1:nsegs
-        totalClusters = total + segClusters(i).NumObjects;
+        totalClusters = totalClusters + segClusters(i).NumObjects;
     end
 
-    featureCellArr = cell ((totalClusters, 12);
-    lookUpCellArr = cell ((totalClusters, 2);
+    featureCellArr = cell (totalClusters, 12);
+    lookUpCellArr = cell (totalClusters, 2);
 
     for j = 1:nsegs % seg0-2
         fprintf ('UBO Detector: calculating features for ID %s (%d clusters in Seg%d) ...\n', ...
@@ -104,7 +103,7 @@ function generateFeatures_forPrediction (ID, subj_dir, template)
 %        for i = 1:seg_NumOfClusters(1,j) % exhaust all clusters
         for i = 1:segClusters(j).NumObjects % exhaust all clusters
 
-            clusterMask = cast ((allSegClustersLabelMatrix (:,:,:,j) == i), 'double');
+            clusterMask = cast ((allSegClusterLabelMatrix (:,:,:,j) == i), 'double');
             % feature5 = nnz(clusterMask);  %%%%%%%%%%%%%%% FEATURE 5 %%%%%%%%%%%%%%%
             
             clusterMasked_flair = clusterMask .* flair_nii_img; % apply cluster mask to FLAIR
