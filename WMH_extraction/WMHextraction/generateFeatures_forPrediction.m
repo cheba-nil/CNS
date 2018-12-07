@@ -149,8 +149,8 @@ function generateFeatures_forPrediction (ID, subj_dir, template)
             
             % calculate our offset
             offset = 0;
-            for k = 1:j-1
-                offset = segClusters(k).NumObjects;
+            for k = 1:(j-1)
+                offset = offset + segClusters(k).NumObjects;
             end 
             featureCellArr{offset+i,1} = feature1;
             featureCellArr{offset+i,2} = feature2;
