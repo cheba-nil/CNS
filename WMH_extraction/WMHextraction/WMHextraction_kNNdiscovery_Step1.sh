@@ -26,7 +26,7 @@ WMHextraction_kNNdiscovery_Step1(){
 
 	DARTELtemplate=$4
 
-    nsegs=3
+    nsegs=$5
 
 	## set directory
 	segx="${subj_dir}/${ID}/mri/preprocessing/FAST_nonBrainRemoved_wr${ID}_FLAIR_seg_"
@@ -152,5 +152,6 @@ WMHextraction_kNNdiscovery_Step1(){
 # $2 = subj_dir
 # $3 = wm_prob_thr
 # $4 = template name
+# $5 = nsegs
 
-WMHextraction_kNNdiscovery_Step1 $1 $2 $3 $4
+WMHextraction_kNNdiscovery_Step1 $1 $2 $3 $4 $5

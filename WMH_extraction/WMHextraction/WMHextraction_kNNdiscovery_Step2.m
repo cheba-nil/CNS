@@ -5,9 +5,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-function WMHextraction_kNNdiscovery_Step2 (k, ID, classifier, template, probThr, trainingFeatures1, trainingFeatures2, varargin)
-
-nsegs=3;
+function WMHextraction_kNNdiscovery_Step2 (k, ID, classifier, template, probThr, trainingFeatures1, trainingFeatures2, nsegs, varargin)
 
 switch classifier
     case 'built-in'
@@ -22,21 +20,21 @@ if exist (decision4training, 'file') == 2
     if exist (feature4training, 'file') == 2
         
         %% generate features for prediction
-        if nargin == 7
-            generateFeatures_forPrediction (ID, [template.studyFolder '/subjects'], template);
-        elseif (nargin >= 8) && strcmp(varargin{1},'noGenF')
+        if nargin == 8
+            generateFeatures_forPrediction (ID, [template.studyFolder '/subjects'], template,nsegs);
+        elseif (nargin >= 9) && strcmp(varargin{1},'noGenF')
             % no need to generate features
-        elseif (nargin >= 8) && ~strcmp(varargin{1},'noGenF')
-            generateFeatures_forPrediction (ID, [template.studyFolder '/subjects'], template);
+        elseif (nargin >= 9) && ~strcmp(varargin{1},'noGenF')
+            generateFeatures_forPrediction (ID, [template.studyFolder '/subjects'], template,nsegs);
         end
 
 
         %% build kNN model
-        if (nargin == 7) || ((nargin == 8) && strcmp(varargin{1},'noGenF'))
+        if (nargin == 8) || ((nargin == 9) && strcmp(varargin{1},'noGenF'))
             int_kNN_mdl = build_kNN_classifier (k,feature4training, decision4training, trainingFeatures1);
-        elseif nargin > 8 && strcmp(varargin{1},'noGenF')
+        elseif nargin > 9 && strcmp(varargin{1},'noGenF')
             int_kNN_mdl = build_kNN_classifier (k,feature4training, decision4training, trainingFeatures1, varargin{2:end});
-        elseif nargin > 7 && ~strcmp(varargin{1},'noGenF')
+        elseif nargin > 8 && ~strcmp(varargin{1},'noGenF')
             int_kNN_mdl = build_kNN_classifier (k,feature4training, decision4training, trainingFeatures1, varargin{:});
         end
 
@@ -57,10 +55,10 @@ if exist (decision4training, 'file') == 2
         
 
         %% saved seg012 clusters with label ID
-        seg_lablIDs = cell(nsegs,1)
+        seg_lablIDs = cell(nsegs,1);
         for i = 1:nsegs
-            seg_lablIDs{i} = nifitread([template.studyFolder,'/subjects', ...
-                ID,'/mri/extractedWMH/temp/',ID,'_seg',i-1,'.nii']);
+            seg_lablIDs{i} = niftiread([template.studyFolder,'/subjects/', ...
+                ID,'/mri/extractedWMH/temp/',ID,'_seg',char(string(i-1)),'.nii']);
             seg_max(i) = max(max(max(seg_lablIDs{i})));
         end
         
@@ -85,7 +83,7 @@ if exist (decision4training, 'file') == 2
 
         offset = 0;
         for i = 1:nsegs
-            score_cell {i} = score (1+offset:offset+seg_max(i),2);
+            score_cell {i} = score ((1+offset):(offset+seg_max(i)),2);
             offset = offset + seg_max(i);
         end
         

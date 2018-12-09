@@ -11,7 +11,7 @@ WMHextraction_SkullStriping_and_FAST(){
 	brain_mask=$5
 	DARTELtemplate=$6
 	gm_prob=$7
-    nsegs=3
+    nsegs=$8
 
     # we still need to create the brain mask if creating a new template
 	if [ "${DARTELtemplate}" = "creating_template" ]; then
@@ -49,4 +49,5 @@ WMHextraction_SkullStriping_and_FAST(){
 # $5 = Brain Mask
 # $6 = DARTEL template
 # $7 = GM prob 
-WMHextraction_SkullStriping_and_FAST $1 $2 $3 $4 $5 $6 $7
+# $8 = nsegs
+WMHextraction_SkullStriping_and_FAST $1 $2 $3 $4 $5 $6 $7 $8

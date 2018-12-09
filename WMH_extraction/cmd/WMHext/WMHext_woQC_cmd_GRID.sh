@@ -11,11 +11,13 @@ usage(){
 	echo "                     -c, --currentFolder                            Use the working directory as study folder"
 	echo "                     -n, --numWorkers                            	  Number of workers"
 	echo "                     -t, --template                            	  Template choice \"native template\" or \"existing template\""
+	echo "                     -S, --segmentations                            Number of segmentations"
 	
 	echo ""
 	exit 1
 }
 template='existing template'
+nsegs=3
 
 for arg in $@
 do
@@ -64,6 +66,16 @@ do
 				            	exit 1
 				            else
 								template="${2}"
+								shift 2
+							fi
+
+				            ;;
+        -S | --segmentations)
+				            if [ "$2" == "" ]; then
+				            	usage
+				            	exit 1
+				            else
+								nsegs="${2}"
 								shift 2
 							fi
 

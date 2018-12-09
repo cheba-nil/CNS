@@ -1,6 +1,4 @@
-function generateFeatures_forPrediction (ID, subj_dir, template)
-
-    nsegs=3;
+function generateFeatures_forPrediction (ID, subj_dir, template, nsegs)
 
     tmpf = strcat (subj_dir, '/', ID, '/mri/kNN_intermediateOutput/tmp.nii.gz');
 

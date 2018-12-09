@@ -25,7 +25,7 @@ function generate(obj);
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % this little hack is required for now to get the 
     % DARTEL template into native space
-    dtemplate = DartelTemplate(obj.CNS_path, obj.age_range);
+    dtemplate = DartelTemplate(obj.CNS_path, obj.age_range, obj.studyFolder);
     %WMHextraction_preprocessing_Step3(obj.studyFolder,obj.CNS_path, ... 
     %                                  dtemplate,'','',obj.age_range);
 
@@ -38,15 +38,15 @@ function generate(obj);
              strcat(obj.dir,'/',warpfile));
  
     % unzip into our template directory
-    gunzip(dtemplate.brain_mask,obj.dir);
-    gunzip(dtemplate.gm_prob,obj.dir);
-    gunzip(dtemplate.wm_prob,obj.dir);
-    gunzip(dtemplate.csf_prob,obj.dir);
-    %gunzip(dtemplate.gm_prob_thr,obj.dir);
-    %gunzip(dtemplate.wm_prob_thr,obj.dir);
-    gunzip(dtemplate.ventricles,obj.dir);
-    gunzip(dtemplate.lobar,obj.dir);
-    gunzip(dtemplate.arterial,obj.dir);
+    copyfile(dtemplate.brain_mask,obj.dir);
+    copyfile(dtemplate.gm_prob,obj.dir);
+    copyfile(dtemplate.wm_prob,obj.dir);
+    copyfile(dtemplate.csf_prob,obj.dir);
+    %copyfile(dtemplate.gm_prob_thr,obj.dir);
+    %copyfile(dtemplate.wm_prob_thr,obj.dir);
+    copyfile(dtemplate.ventricles,obj.dir);
+    copyfile(dtemplate.lobar,obj.dir);
+    copyfile(dtemplate.arterial,obj.dir);
 
     % set variables pointing to the unzipped masks in the template folder
     brain_mask = strcat( ...
