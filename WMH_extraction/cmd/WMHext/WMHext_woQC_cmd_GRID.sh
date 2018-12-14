@@ -114,7 +114,8 @@ else
 																	'built-in',\
 																	'65to75',\
 																	0.7,\
-																	'arch');\
+																	'arch',\
+                                                                    $nsegs);\
 									exit" \
 									-logfile ${studyFolder}/logfile.out \
 									</dev/null
