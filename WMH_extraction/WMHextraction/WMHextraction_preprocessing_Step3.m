@@ -39,7 +39,7 @@ function nativeTemplateRun(template,coregExcldList,segExcldList)
     % BAD CODE ALERT:
     % Refer to comment in @NativeTemplate/generate.m
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    dtemplate = DartelTemplate(template.CNS_path, template.age_range);
+    dtemplate = DartelTemplate(template.CNS_path, template.age_range, template.studyFolder);
     WMHextraction_preprocessing_Step3(template.studyFolder,template.CNS_path, ...
                                       dtemplate,coregExcldList,segExcldList,template.age_range);
 
