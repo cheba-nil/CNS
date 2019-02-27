@@ -58,7 +58,7 @@ function generateFeatures_forPrediction (ID, subj_dir, template, nsegs)
         niftiwrite(segClusterLabels{i}, strcat(subj_dir, '/', ID, ...
             '/mri/extractedWMH/temp/', ID, '_seg',string(i-1),'.nii'));
         % copy over the correct geometry
-        system(['$FSLDIR/bin/fslcpgeom ' char(csfMasked_seg_paths(i)) ' ' subj_dir '/' ID '/mri/extractedWMH/temp/' ID '_seg' char(string(i-1))]);
+        [a,o] = system(['$FSLDIR/bin/fslcpgeom ' char(csfMasked_seg_paths(i)) ' ' subj_dir '/' ID '/mri/extractedWMH/temp/' ID '_seg' char(string(i-1))]);
     end
 
     % imshow3Dfull (seg2ClustersLabelMatrix);

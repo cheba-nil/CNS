@@ -102,8 +102,9 @@ if exist (decision4training, 'file') == 2
         niftiwrite(seg012_score_img, [template.studyFolder '/subjects/' ID '/mri/extractedWMH/' ID '_WMH_ProbMap.nii']);
 
         % copy geometry
-        system(['$FSLDIR/bin/fslcpgeom ' template.studyFolder '/subjects/' ID '/mri/extractedWMH/temp/' ID '_seg0.nii'  ...
-               ' ' template.studyFolder '/subjects/' ID '/mri/extractedWMH/' ID '_WMH_ProbMap.nii']);
+        [a,o] = system(['$FSLDIR/bin/fslcpgeom ' template.studyFolder '/subjects/' ID '/mri/extractedWMH/temp/' ID '_seg0'  ...
+               ' ' template.studyFolder '/subjects/' ID '/mri/extractedWMH/' ID '_WMH_ProbMap']);
+
         
         clear seg012_combined4D_score;
         
@@ -118,8 +119,8 @@ if exist (decision4training, 'file') == 2
         probThr = sprintf ('%1.2f', probThr); % two decimals
         probThr_parts = strsplit (probThr, '.');
         niftiwrite (thresholded_probMap, [template.studyFolder '/subjects/' ID '/mri/extractedWMH/' ID '_WMH_Prob' probThr_parts{1} '_' probThr_parts{2} '.nii']);
-        system(['$FSLDIR/bin/fslcpgeom ' template.studyFolder '/subjects/' ID '/mri/extractedWMH/temp/' ID '_seg0.nii' ...
-               ' ' template.studyFolder '/subjects/' ID '/mri/extractedWMH/' ID '_WMH_Prob' probThr_parts{1} '_' probThr_parts{2} '.nii']);
+        system(['fslcpgeom ' template.studyFolder '/subjects/' ID '/mri/extractedWMH/temp/' ID '_seg0' ...
+               ' ' template.studyFolder '/subjects/' ID '/mri/extractedWMH/' ID '_WMH_Prob' probThr_parts{1} '_' probThr_parts{2}]);
 
         clear thresholded_probMap;
         

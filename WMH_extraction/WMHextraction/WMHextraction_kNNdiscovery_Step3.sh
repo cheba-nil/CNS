@@ -82,24 +82,29 @@ WMHextraction_kNNdiscovery_Step3(){
 	# 						${subj_dir}/${ID}/mri/extractedWMH/${ID}_WMH_ProbThr${probThr_str}
 
 
+    ##############################################################################################
+    # The following code has been removed because it results in incorrect images
+    # It has been replaced by a call to fslcpgeom in the matlab script that creates the nifti file
+    ##############################################################################################
+
 
 	## replace the header of extracted WMH with restore FLAIR (MATLAB generated nii's are 1*1*1),
 	## and swap orientation
 	# echo "--== swap orientation ==--"
-	restoreFLAIR=`ls ${subj_dir}/${ID}/mri/preprocessing/FAST_nonBrainRemoved_wr${ID}*_restore*`
-	${FSLDIR}/bin/fslhd -x ${restoreFLAIR} > ${subj_dir}/${ID}/mri/extractedWMH/restore_hdr.xml
+	#restoreFLAIR=`ls ${subj_dir}/${ID}/mri/preprocessing/FAST_nonBrainRemoved_wr${ID}*_restore*`
+	#${FSLDIR}/bin/fslhd -x ${restoreFLAIR} > ${subj_dir}/${ID}/mri/extractedWMH/restore_hdr.xml
 
 	# ${FSLDIR}/bin/fslcreatehd ${subj_dir}/${ID}/mri/extractedWMH/restore_hdr.xml ${subj_dir}/${ID}/mri/extractedWMH/${ID}_WMH_LablMap
-	${FSLDIR}/bin/fslcreatehd ${subj_dir}/${ID}/mri/extractedWMH/restore_hdr.xml ${subj_dir}/${ID}/mri/extractedWMH/${ID}_WMH_ProbMap
+	#${FSLDIR}/bin/fslcreatehd ${subj_dir}/${ID}/mri/extractedWMH/restore_hdr.xml ${subj_dir}/${ID}/mri/extractedWMH/${ID}_WMH_ProbMap
 	# ${FSLDIR}/bin/fslcreatehd ${subj_dir}/${ID}/mri/extractedWMH/restore_hdr.xml ${subj_dir}/${ID}/mri/extractedWMH/${ID}_WMH_refinementKNN
-	${FSLDIR}/bin/fslcreatehd ${subj_dir}/${ID}/mri/extractedWMH/restore_hdr.xml ${subj_dir}/${ID}/mri/extractedWMH/${ID}_WMH_Prob${probThr_str}
+	#${FSLDIR}/bin/fslcreatehd ${subj_dir}/${ID}/mri/extractedWMH/restore_hdr.xml ${subj_dir}/${ID}/mri/extractedWMH/${ID}_WMH_Prob${probThr_str}
 
 	# ${FSLDIR}/bin/fslorient -swaporient ${subj_dir}/${ID}/mri/extractedWMH/${ID}_WMH_LablMap
-	${FSLDIR}/bin/fslorient -swaporient ${subj_dir}/${ID}/mri/extractedWMH/${ID}_WMH_ProbMap
+	#${FSLDIR}/bin/fslorient -swaporient ${subj_dir}/${ID}/mri/extractedWMH/${ID}_WMH_ProbMap
 	# ${FSLDIR}/bin/fslorient -swaporient ${subj_dir}/${ID}/mri/extractedWMH/${ID}_WMH_refinementKNN
-	${FSLDIR}/bin/fslorient -swaporient ${subj_dir}/${ID}/mri/extractedWMH/${ID}_WMH_Prob${probThr_str}
+	#${FSLDIR}/bin/fslorient -swaporient ${subj_dir}/${ID}/mri/extractedWMH/${ID}_WMH_Prob${probThr_str}
 
-	rm -f ${subj_dir}/${ID}/mri/extractedWMH/restore_hdr.xml
+	#rm -f ${subj_dir}/${ID}/mri/extractedWMH/restore_hdr.xml
 
 
 
