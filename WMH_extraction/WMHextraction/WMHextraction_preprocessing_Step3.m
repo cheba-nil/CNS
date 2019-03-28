@@ -45,17 +45,22 @@ function nativeTemplateRun(template,coregExcldList,segExcldList)
 
     excldList = [coregExcldList ' ' segExcldList];
     excldIDs = strsplit (excldList, ' ');
+
+    class_array = NativeTemplate.empty(1,0)
+    for i = 1:Nsubj
+        class_array(i) = copy(template);
+    end
     
     % generate a template foreach subject
     parfor i = 1:Nsubj
-        subtemp = copy(template) % get copy to make this parfor friendly
-        subtemp.subID = i % set the subject ID
+        subtemp = class_array(i);  % get copy to make this parfor friendly
+        subtemp.subID = i; % set the subject ID
 
         T1imgNames = strsplit (T1folder(i).name, '_');   % split T1 image name, delimiter is underscore
         ID = T1imgNames{1};   % first section is ID
 
         if ismember(ID, excldIDs) == 0
-            subtemp.generate()
+            subtemp.generate();
         end
     end
 
