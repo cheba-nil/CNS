@@ -112,13 +112,13 @@ function generate(obj);
     t1 = strcat(obj.studyFolder,'/subjects/',obj.subID,...
                     '/mri/orig/',obj.subID,'_T1.nii'); ...
     
-    CNSP_reverse_registration_wMX(flair,t1,obj.dir,wbrain_mask);
-    CNSP_reverse_registration_wMX(flair,t1,obj.dir,wgm_prob,'Tri');
-    CNSP_reverse_registration_wMX(flair,t1,obj.dir,wwm_prob,'Tri');
-    CNSP_reverse_registration_wMX(flair,t1,obj.dir,wcsf_prob,'Tri');
-    CNSP_reverse_registration_wMX(flair,t1,obj.dir,wventricles,'Tri');
-    CNSP_reverse_registration_wMX(flair,t1,obj.dir,wlobar);
-    CNSP_reverse_registration_wMX(flair,t1,obj.dir,warterial);
+    CNSP_reverse_registration_wMx(flair,t1,obj.dir,wbrain_mask);
+    CNSP_reverse_registration_wMx(flair,t1,obj.dir,wgm_prob,'Tri');
+    CNSP_reverse_registration_wMx(flair,t1,obj.dir,wwm_prob,'Tri');
+    CNSP_reverse_registration_wMx(flair,t1,obj.dir,wcsf_prob,'Tri');
+    CNSP_reverse_registration_wMx(flair,t1,obj.dir,wventricles,'Tri');
+    CNSP_reverse_registration_wMx(flair,t1,obj.dir,wlobar);
+    CNSP_reverse_registration_wMx(flair,t1,obj.dir,warterial);
 
     % Remove NaN's because they're evil
     tmpfuz = strcat(obj.dir,'/tmp.nii');
