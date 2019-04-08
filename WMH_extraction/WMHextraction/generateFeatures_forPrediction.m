@@ -123,7 +123,10 @@ function generateFeatures_forPrediction (ID, subj_dir, template, nsegs)
             feature4 = (clusterMasked_flair_mean)/(MI_WM_flair); %%%%%%%%% FEATURE 4 %%%%%%%%%%%%%
             
             % cluster size
-            feature5 = log10(nnz(clusterMask));  %%%%%%%%%%%%%%% FEATURE 5 lg-transformed cluster size %%%%%%%%%%%%%%%
+            % In case our template isn't actually in DARTEL space
+            % we need to make an adjustment for the different resolution
+            scale_factor = prod(niftiinfo(template.wm_prob).PixelDimensions)/(1.5^3)
+            feature5 = log10(nnz(clusterMask)*scale_factor);  %%%%%%%%%%%%%%% FEATURE 5 lg-transformed cluster size %%%%%%%%%%%%%%%
             
             % GM, WM, CSF probability and distance to ventricles (nonzeros
             % mean)
