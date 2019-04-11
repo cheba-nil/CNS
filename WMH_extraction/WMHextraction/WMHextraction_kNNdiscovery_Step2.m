@@ -87,13 +87,37 @@ if exist (decision4training, 'file') == 2
             offset = offset + seg_max(i);
         end
         
+        dims = size(seg012_combined4D_score);
         for p = 1:nsegs
+
+            % create an array of Linked Lists
+            n_lists = seg012_max(1,p);
+            java_linked_lists = java.util.ArrayList;
+            for i = 1:n_lists
+                java_linked_lists.add(java.util.LinkedList);
+            end
+            linked_lists = toArray(java_linked_lists);
+
+            for z = 1:dims(3)
+            for y = 1:dims(2)
+            for x = 1:dims(1)
+                val = seg012_combined4D_score(x,y,z,p);
+                if val > 0
+                    linked_lists(val).add([x,y,z]);
+                end
+            end
+            end
+            end
+
             for m = 1:seg012_max(1,p)
-                [r,c,v] = ind2sub(size(seg012_combined4D_score(:,:,:,p)),find(seg012_combined4D_score(:,:,:,p) == m)); % find index in 3D array
-                [r_Nrow,~] = size(r);
-               
-                for q = 1: r_Nrow
-                    seg012_combined4D_score(r(q),c(q),v(q),p) = score_cell{p}(m);
+                ll = linked_lists(m);
+                for q = 1:ll.size()
+                    coord = ll.poll();
+                    x = coord(1);
+                    y = coord(2);
+                    z = coord(3);
+                    seg012_combined4D_score(x,y,z,p) = score_cell{p}(m);
+                    
                 end
             end
         end     
