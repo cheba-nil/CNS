@@ -98,24 +98,60 @@ function generateFeatures_forPrediction (ID, subj_dir, template, nsegs)
     for j = 1:nsegs % seg0-2
         fprintf ('UBO Detector: calculating features for ID %s (%d clusters in Seg%d) ...\n', ...
             ID, segClusters(j).NumObjects, (j-1));
-%        for i = 1:seg_NumOfClusters(1,j) % exhaust all clusters
+
+        dim = size(allSegClusterLabelMatrix);
+
+        % create an array of Linked Lists (one for each cluster) 
+        n_clusters=segClusters(j).NumObjects;
+        java_linked_lists = java.util.ArrayList;
+        for k = 1:n_clusters
+            java_linked_lists.add(java.util.LinkedList);
+        end
+        linked_lists = toArray(java_linked_lists);
+
+        % For each cluster, we build a linked list of
+        % coordinates which belong to the cluster
+
+        for x = 1:dim(1)
+        for y = 1:dim(2)
+        for z = 1:dim(3)
+            val = allSegClusterLabelMatrix(x,y,z,j);
+            if val > 0
+                linked_lists(val).add([x,y,z]);
+            end
+        end
+        end
+        end
+
         for i = 1:segClusters(j).NumObjects % exhaust all clusters
 
-            clusterMask = cast ((allSegClusterLabelMatrix (:,:,:,j) == i), 'double');
-            % feature5 = nnz(clusterMask);  %%%%%%%%%%%%%%% FEATURE 5 %%%%%%%%%%%%%%%
-            
-            clusterMasked_flair = clusterMask .* flair_nii_img; % apply cluster mask to FLAIR
-            clusterMasked_t1 = clusterMask .* t1_nii_img; % apply cluster mask to T1
-            clusterMasked_flair_mean = mean(nonzeros(clusterMasked_flair)); % mean intensity in the cluster on FLAIR
-            clusterMasked_t1_mean = mean(nonzeros(clusterMasked_t1)); % mean intensity in the cluster on T1
-            clusterMasked_flair_sd = std (cast(nonzeros(clusterMasked_flair),'double')); % SD of the intensity in the cluster
-            clusterCentroid = regionprops(clusterMask,'Centroid');
-            % rounded_clusterCentroid = round(clusterCentroid.Centroid);
-            % FEATURE 6, looked at corresponding WM average mask value (after applying accurate CSF). 
-            % Note: regionprops(__,'Centroid') returns x,y,z of the centroid. When indexing an array, use the order of y(row),x(col),z. 
-            % feature6 = WM_prob_map_nii_img(rounded_clusterCentroid(1,2),rounded_clusterCentroid(1,1),rounded_clusterCentroid(1,3)); 
-            % mean intensity on WM prob map as Feature 6
-            
+            % Initialize some variables we need to use ...
+            clusterMask = zeros(dim(1),dim(2),dim(3)); 
+            ll = linked_lists(i);
+            cluster_size = ll.size();
+            t1_values = zeros(1,cluster_size);
+            flair_values = zeros(1,cluster_size);
+            gm_prob_values = zeros(1,cluster_size);
+            wm_prob_values = zeros(1,cluster_size);
+            csf_prob_values = zeros(1,cluster_size);
+            ventricle_distance_values = zeros(1,cluster_size);
+
+            % Iterate through each of the coordinates belonging to
+            % the cluster building lists of relevant values
+            for k = 1:cluster_size
+                cord = ll.poll();
+                x=cord(1);
+                y=cord(2);
+                z=cord(3);
+                clusterMask(x,y,z)=1;
+                t1_values(k) = t1_nii_img(x,y,z);
+                flair_values(k) = flair_nii_img(x,y,z);
+                gm_prob_values(k) = GM_prob_map_nii_img(x,y,z);
+                wm_prob_values(k) = WM_prob_map_nii_img(x,y,z);
+                csf_prob_values(k) = CSF_prob_map_nii_img(x,y,z);
+                ventricle_distance_values(k) = Vent_distanceMap_nii_img(x,y,z);
+            end
+
             % Intensity features
             feature1 = (clusterMasked_t1_mean)/(MI_GM_t1); %%%%%%%%% FEATURE 1 %%%%%%%%%%%%%
             feature2 = (clusterMasked_flair_mean)/(MI_GM_flair); %%%%%%%%% FEATURE 2 %%%%%%%%%%%%%
@@ -123,25 +159,17 @@ function generateFeatures_forPrediction (ID, subj_dir, template, nsegs)
             feature4 = (clusterMasked_flair_mean)/(MI_WM_flair); %%%%%%%%% FEATURE 4 %%%%%%%%%%%%%
             
             % cluster size
-            feature5 = log10(nnz(clusterMask));  %%%%%%%%%%%%%%% FEATURE 5 lg-transformed cluster size %%%%%%%%%%%%%%%
+            info = niftiinfo(template.wm_prob);
+            scale_factor = prod(info.PixelDimensions)/(1.5^3);
+            feature5 = log10(cluster_size*scale_factor); %%%%%%%%%%%%%%% FEATURE 5 lg-transformed cluster size %%%%%%%%%%%%%%%
             
-            % GM, WM, CSF probability and distance to ventricles (nonzeros
-            % mean)
-    %         feature6 = mean(nonzeros(GM_prob_map_nii_img .* clusterMask));
-    %         feature7 = mean(nonzeros(WM_prob_map_nii_img .* clusterMask));
-    %         feature8 = mean(nonzeros(CSF_prob_map_nii_img .* clusterMask));
-    %         feature9 = mean(nonzeros(Vent_distanceMap_nii_img .* clusterMask));
-            
-            % GM, WM, CSF probability and distance to ventricles (cluster mean)
-            feature6 = sum(nonzeros(GM_prob_map_nii_img .* clusterMask)) / nnz(clusterMask);
-            feature7 = sum(nonzeros(WM_prob_map_nii_img .* clusterMask)) / nnz(clusterMask);
-            feature8 = sum(nonzeros(CSF_prob_map_nii_img .* clusterMask)) / nnz(clusterMask);
-            feature9 = sum(nonzeros(Vent_distanceMap_nii_img .* clusterMask)) / nnz(clusterMask);
-            
-            % cluster centroid coordinate
-            feature10 = clusterCentroid.Centroid(1,2); % centroid x coordinate
-            feature11 = clusterCentroid.Centroid(1,1); % centroid y coordinate
-            feature12 = clusterCentroid.Centroid(1,3); % centroid z coordinate
+            feature6 = mean(gm_prob_values);
+            feature7 = mean(wm_prob_values);
+            feature8 = mean(csf_prob_values);
+            feature9 = mean(ventricle_prob_values);
+            feature10 = -1;
+            feature11 = -1;
+            feature12 = -1;
             
     %         disp (clusterMasked_flair_mean);      
             
