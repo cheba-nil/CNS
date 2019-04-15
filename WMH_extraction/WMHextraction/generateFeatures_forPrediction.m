@@ -125,7 +125,8 @@ function generateFeatures_forPrediction (ID, subj_dir, template, nsegs)
             % cluster size
             % In case our template isn't actually in DARTEL space
             % we need to make an adjustment for the different resolution
-            scale_factor = prod(niftiinfo(template.wm_prob).PixelDimensions)/(1.5^3)
+            info = niftiinfo(template.wm_prob);
+            scale_factor = prod(info.PixelDimensions)/(1.5^3);
             feature5 = log10(nnz(clusterMask)*scale_factor);  %%%%%%%%%%%%%%% FEATURE 5 lg-transformed cluster size %%%%%%%%%%%%%%%
             
             % GM, WM, CSF probability and distance to ventricles (nonzeros
