@@ -163,7 +163,7 @@ function WMHextraction_woQC_cmd (studyFolder, ...
         if ismember(ID, excldIDs) == 0
             subtemp = copy(template);
             if strcmp(template.name, 'native template')
-                subtemp.subID = i % need to set the template subject if native
+                subtemp.subID = i; % need to set the template subject if native
             end 
 
             cmd_skullStriping_FAST_2 = [CNSP_path '/WMH_extraction/WMHextraction/WMHextraction_SkullStriping_and_FAST.sh ' ...
@@ -189,12 +189,12 @@ function WMHextraction_woQC_cmd (studyFolder, ...
 %     system (cmd_kNN_step1_1);
 
 
-    for i = 1:Nsubj
+    parfor i = 1:Nsubj
         T1imgNames = strsplit (T1folder(i).name, '_');   % split T1 image name, delimiter is underscore
         ID = T1imgNames{1};   % first section is ID
         subtemp = copy(template);
         if strcmp(template.name, 'native template')
-            subtemp.subID = i % need to set the template subject if native
+            subtemp.subID = i; % need to set the template subject if native
         end 
 
         if ismember(ID, excldIDs) == 0
