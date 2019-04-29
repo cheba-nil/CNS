@@ -30,6 +30,12 @@ WMHextraction_kNNdiscovery_Step3(){
 	# echo "Here --== $probThr_str ==--"
 	# probThr_str=`echo $(printf '%1.2f' $5) | sed 's/\./_/g'`
 
+    # template masks
+    wm_prob_thr="$6"
+    ventricle_mask="$7"
+    lobar_mask="$8"
+    arterial_mask="$9"
+
 	# change predicted_WMH_clusters_ProbThr0_5.nii to predicted_WMH_clusters_ProbThr0_5.nii.gz
 	# change ProbMap.nii to ProbMap.nii.gz
 	if [ -f ${subj_dir}/${ID}/mri/extractedWMH/${ID}_WMH_LablMap.nii.gz ]; then
@@ -76,24 +82,29 @@ WMHextraction_kNNdiscovery_Step3(){
 	# 						${subj_dir}/${ID}/mri/extractedWMH/${ID}_WMH_ProbThr${probThr_str}
 
 
+    ##############################################################################################
+    # The following code has been removed because it results in incorrect images
+    # It has been replaced by a call to fslcpgeom in the matlab script that creates the nifti file
+    ##############################################################################################
+
 
 	## replace the header of extracted WMH with restore FLAIR (MATLAB generated nii's are 1*1*1),
 	## and swap orientation
 	# echo "--== swap orientation ==--"
-	restoreFLAIR=`ls ${subj_dir}/${ID}/mri/preprocessing/FAST_nonBrainRemoved_wr${ID}*_restore*`
-	${FSLDIR}/bin/fslhd -x ${restoreFLAIR} > ${subj_dir}/${ID}/mri/extractedWMH/restore_hdr.xml
+	#restoreFLAIR=`ls ${subj_dir}/${ID}/mri/preprocessing/FAST_nonBrainRemoved_wr${ID}*_restore*`
+	#${FSLDIR}/bin/fslhd -x ${restoreFLAIR} > ${subj_dir}/${ID}/mri/extractedWMH/restore_hdr.xml
 
 	# ${FSLDIR}/bin/fslcreatehd ${subj_dir}/${ID}/mri/extractedWMH/restore_hdr.xml ${subj_dir}/${ID}/mri/extractedWMH/${ID}_WMH_LablMap
-	${FSLDIR}/bin/fslcreatehd ${subj_dir}/${ID}/mri/extractedWMH/restore_hdr.xml ${subj_dir}/${ID}/mri/extractedWMH/${ID}_WMH_ProbMap
+	#${FSLDIR}/bin/fslcreatehd ${subj_dir}/${ID}/mri/extractedWMH/restore_hdr.xml ${subj_dir}/${ID}/mri/extractedWMH/${ID}_WMH_ProbMap
 	# ${FSLDIR}/bin/fslcreatehd ${subj_dir}/${ID}/mri/extractedWMH/restore_hdr.xml ${subj_dir}/${ID}/mri/extractedWMH/${ID}_WMH_refinementKNN
-	${FSLDIR}/bin/fslcreatehd ${subj_dir}/${ID}/mri/extractedWMH/restore_hdr.xml ${subj_dir}/${ID}/mri/extractedWMH/${ID}_WMH_Prob${probThr_str}
+	#${FSLDIR}/bin/fslcreatehd ${subj_dir}/${ID}/mri/extractedWMH/restore_hdr.xml ${subj_dir}/${ID}/mri/extractedWMH/${ID}_WMH_Prob${probThr_str}
 
 	# ${FSLDIR}/bin/fslorient -swaporient ${subj_dir}/${ID}/mri/extractedWMH/${ID}_WMH_LablMap
-	${FSLDIR}/bin/fslorient -swaporient ${subj_dir}/${ID}/mri/extractedWMH/${ID}_WMH_ProbMap
+	#${FSLDIR}/bin/fslorient -swaporient ${subj_dir}/${ID}/mri/extractedWMH/${ID}_WMH_ProbMap
 	# ${FSLDIR}/bin/fslorient -swaporient ${subj_dir}/${ID}/mri/extractedWMH/${ID}_WMH_refinementKNN
-	${FSLDIR}/bin/fslorient -swaporient ${subj_dir}/${ID}/mri/extractedWMH/${ID}_WMH_Prob${probThr_str}
+	#${FSLDIR}/bin/fslorient -swaporient ${subj_dir}/${ID}/mri/extractedWMH/${ID}_WMH_Prob${probThr_str}
 
-	rm -f ${subj_dir}/${ID}/mri/extractedWMH/restore_hdr.xml
+	#rm -f ${subj_dir}/${ID}/mri/extractedWMH/restore_hdr.xml
 
 
 
@@ -111,7 +122,7 @@ WMHextraction_kNNdiscovery_Step3(){
 
 	# build periventricle mask
 	${FSLDIR}/bin/fslmaths \
-		$(dirname ${pipelinePath})/Templates/DARTEL_ventricle_distance_map/DARTEL_ventricle_distance_map \
+        $ventricle_mask \
 		 -uthr ${PVmag} \
 		 -bin \
 		 -fillh \
@@ -150,7 +161,7 @@ WMHextraction_kNNdiscovery_Step3(){
 	# segment nonPVWMH into lobes, cerebellum, and brainstem WMH
 	# all in one image
 	${FSLDIR}/bin/fslmaths ${subj_dir}/${ID}/mri/extractedWMH/${ID}_nonPVWMH \
-							-mul $(dirname ${pipelinePath})/Templates/DARTEL_lobar_and_arterial_templates/DARTEL_lobar_template \
+                            -mul $lobar_mask \
 							${subj_dir}/${ID}/mri/extractedWMH/${ID}_nonPVWMH_lobar
 
 	# ${FSLDIR}/bin/fslmaths  ${subj_dir}/${ID}/mri/extractedWMH/${ID}_nonPVWMH_lobar \
@@ -165,66 +176,8 @@ WMHextraction_kNNdiscovery_Step3(){
 	# all in one image
 	${FSLDIR}/bin/fslmaths ${subj_dir}/${ID}/mri/extractedWMH/${ID}_WMH \
 							-bin \
-							-mul $(dirname ${pipelinePath})/Templates/DARTEL_lobar_and_arterial_templates/DARTEL_arterial_template \
+                            -mul $arterial_mask \
 							${subj_dir}/${ID}/mri/extractedWMH/${ID}_WMH_arterial
-
-	# ${FSLDIR}/bin/fslmaths ${subj_dir}/${ID}/mri/extractedWMH/${ID}_WMH_arterial \
-	# 						-bin \
-	# 						-mul -1 \
-	# 						-add ${subj_dir}/${ID}/mri/extractedWMH/${ID}_WMH \
-	# 						${subj_dir}/${ID}/mri/extractedWMH/arterialWMH/${ID}_unidentified_arterialWMH
-
-
-	# # segment DWMH into lobes
-	# ${FSLDIR}/bin/fslmaths ${subj_dir}/${ID}/mri/extractedWMH/${ID}_WMH_DWMH \
-	# 	 -mas $(dirname ${pipelinePath})/Templates/DARTEL_lobar_and_arterial_templates/DARTEL_Lfrontal_template \
-	# 	 ${subj_dir}/${ID}/mri/extractedWMH/${ID}_WMH_DWMH_Lfrontal
-
-	# ${FSLDIR}/bin/fslmaths ${subj_dir}/${ID}/mri/extractedWMH/${ID}_WMH_DWMH \
-	# 	 -mas $(dirname ${pipelinePath})/Templates/DARTEL_lobar_and_arterial_templates/DARTEL_Rfrontal_template \
-	# 	 ${subj_dir}/${ID}/mri/extractedWMH/${ID}_WMH_DWMH_Rfrontal
-
-	# ${FSLDIR}/bin/fslmaths ${subj_dir}/${ID}/mri/extractedWMH/${ID}_WMH_DWMH \
-	# 	 -mas $(dirname ${pipelinePath})/Templates/DARTEL_lobar_and_arterial_templates/DARTEL_Ltemporal_template \
-	# 	 ${subj_dir}/${ID}/mri/extractedWMH/${ID}_WMH_DWMH_Ltemporal
-	
-	# ${FSLDIR}/bin/fslmaths ${subj_dir}/${ID}/mri/extractedWMH/${ID}_WMH_DWMH \
-	# 	 -mas $(dirname ${pipelinePath})/Templates/DARTEL_lobar_and_arterial_templates/DARTEL_Rtemporal_template \
-	# 	 ${subj_dir}/${ID}/mri/extractedWMH/${ID}_WMH_DWMH_Rtemporal
-
-	# ${FSLDIR}/bin/fslmaths ${subj_dir}/${ID}/mri/extractedWMH/${ID}_WMH_DWMH \
-	# 	 -mas $(dirname ${pipelinePath})/Templates/DARTEL_lobar_and_arterial_templates/DARTEL_Lparietal_template \
-	# 	 ${subj_dir}/${ID}/mri/extractedWMH/${ID}_WMH_DWMH_Lparietal
-	
-	# ${FSLDIR}/bin/fslmaths ${subj_dir}/${ID}/mri/extractedWMH/${ID}_WMH_DWMH \
-	# 	 -mas $(dirname ${pipelinePath})/Templates/DARTEL_lobar_and_arterial_templates/DARTEL_Rparietal_template \
-	# 	 ${subj_dir}/${ID}/mri/extractedWMH/${ID}_WMH_DWMH_Rparietal
-
-	# ${FSLDIR}/bin/fslmaths ${subj_dir}/${ID}/mri/extractedWMH/${ID}_WMH_DWMH \
-	# 	 -mas $(dirname ${pipelinePath})/Templates/DARTEL_lobar_and_arterial_templates/DARTEL_Loccipital_template \
-	# 	 ${subj_dir}/${ID}/mri/extractedWMH/${ID}_WMH_DWMH_Loccipital
-	
-	# ${FSLDIR}/bin/fslmaths ${subj_dir}/${ID}/mri/extractedWMH/${ID}_WMH_DWMH \
-	# 	 -mas $(dirname ${pipelinePath})/Templates/DARTEL_lobar_and_arterial_templates/DARTEL_Roccipital_template \
-	# 	 ${subj_dir}/${ID}/mri/extractedWMH/${ID}_WMH_DWMH_Roccipital
-
-
-	# # cerebellum and brainstem WMH
-	# ${FSLDIR}/bin/fslmaths ${subj_dir}/${ID}/mri/extractedWMH/${ID}_WMH_DWMH \
-	# 	 -mas $(dirname ${pipelinePath})/Templates/DARTEL_lobar_and_arterial_templates/DARTEL_Lcerebellum_template \
-	# 	 ${subj_dir}/${ID}/mri/extractedWMH/${ID}_WMH_DWMH_Lcerebellum
-	
-	# ${FSLDIR}/bin/fslmaths ${subj_dir}/${ID}/mri/extractedWMH/${ID}_WMH_DWMH \
-	# 	 -mas $(dirname ${pipelinePath})/Templates/DARTEL_lobar_and_arterial_templates/DARTEL_Rcerebellum_template \
-	# 	 ${subj_dir}/${ID}/mri/extractedWMH/${ID}_WMH_DWMH_Rcerebellum
-
-	# ${FSLDIR}/bin/fslmaths ${subj_dir}/${ID}/mri/extractedWMH/${ID}_WMH_DWMH \
-	# 	 -mas $(dirname ${pipelinePath})/Templates/DARTEL_lobar_and_arterial_templates/DARTEL_Brainstem_template \
-	# 	 ${subj_dir}/${ID}/mri/extractedWMH/${ID}_WMH_DWMH_Brainstem
-
-
-
-
 
 
 	# Generate image for each lobar segment
@@ -453,25 +406,9 @@ WMHextraction_kNNdiscovery_Step3(){
 	# Vol. of WMH in lobar segments
 	# -----------------------------
 	
-	# Vol_WMHclusters=`bc <<< "1.5 * 1.5 * 1.5 * ${No_WMHclusters}"`
-	# Vol_PVWMHclusters=`bc <<< "1.5 * 1.5 * 1.5 * ${No_PVWMHclusters}"`
-	# Vol_DWMHclusters=`bc <<< "1.5 * 1.5 * 1.5 * ${No_DWMHclusters}"`
 	Vol_WMHclusters=`${FSLDIR}/bin/fslstats ${subj_dir}/${ID}/mri/extractedWMH/${ID}_WMH -V | awk '{print $2}'`
 	Vol_PVWMHclusters=`${FSLDIR}/bin/fslstats ${subj_dir}/${ID}/mri/extractedWMH/${ID}_PVWMH -V | awk '{print $2}'`
 	Vol_DWMHclusters=`${FSLDIR}/bin/fslstats ${subj_dir}/${ID}/mri/extractedWMH/${ID}_DWMH -V | awk '{print $2}'`
-
-
-	# Vol_Lfrontal_WMHclusters=`bc <<< "1.5 * 1.5 * 1.5 * ${No_Lfrontal_WMHclusters}"`
-	# Vol_Rfrontal_WMHclusters=`bc <<< "1.5 * 1.5 * 1.5 * ${No_Rfrontal_WMHclusters}"`
-	# Vol_Ltemporal_WMHclusters=`bc <<< "1.5 * 1.5 * 1.5 * ${No_Ltemporal_WMHclusters}"`
-	# Vol_Rtemporal_WMHclusters=`bc <<< "1.5 * 1.5 * 1.5 * ${No_Rtemporal_WMHclusters}"`
-	# Vol_Lparietal_WMHclusters=`bc <<< "1.5 * 1.5 * 1.5 * ${No_Lparietal_WMHclusters}"`
-	# Vol_Rparietal_WMHclusters=`bc <<< "1.5 * 1.5 * 1.5 * ${No_Rparietal_WMHclusters}"`
-	# Vol_Loccipital_WMHclusters=`bc <<< "1.5 * 1.5 * 1.5 * ${No_Loccipital_WMHclusters}"`
-	# Vol_Roccipital_WMHclusters=`bc <<< "1.5 * 1.5 * 1.5 * ${No_Roccipital_WMHclusters}"`
-	# Vol_Lcerebellum_WMHclusters=`bc <<< "1.5 * 1.5 * 1.5 * ${No_Lcerebellum_WMHclusters}"`
-	# Vol_Rcerebellum_WMHclusters=`bc <<< "1.5 * 1.5 * 1.5 * ${No_Rcerebellum_WMHclusters}"`
-	# Vol_Brainstem_WMHclusters=`bc <<< "1.5 * 1.5 * 1.5 * ${No_Brainstem_WMHclusters}"`
 
 	Vol_Lfrontal_WMHclusters=`${FSLDIR}/bin/fslstats ${subj_dir}/${ID}/mri/extractedWMH/lobarWMH/${ID}_Lfrontal_WMH -V | awk '{print $2}'`
 	Vol_Rfrontal_WMHclusters=`${FSLDIR}/bin/fslstats ${subj_dir}/${ID}/mri/extractedWMH/lobarWMH/${ID}_Rfrontal_WMH -V | awk '{print $2}'`
@@ -484,10 +421,6 @@ WMHextraction_kNNdiscovery_Step3(){
 	Vol_Lcerebellum_WMHclusters=`${FSLDIR}/bin/fslstats ${subj_dir}/${ID}/mri/extractedWMH/lobarWMH/${ID}_Lcerebellum_WMH -V | awk '{print $2}'`
 	Vol_Rcerebellum_WMHclusters=`${FSLDIR}/bin/fslstats ${subj_dir}/${ID}/mri/extractedWMH/lobarWMH/${ID}_Rcerebellum_WMH -V | awk '{print $2}'`
 	Vol_Brainstem_WMHclusters=`${FSLDIR}/bin/fslstats ${subj_dir}/${ID}/mri/extractedWMH/lobarWMH/${ID}_Brainstem_WMH -V | awk '{print $2}'`
-
-	# Vol_unidentified_lobarWMHclusters=`${FSLDIR}/bin/fslstats ${subj_dir}/${ID}/mri/extractedWMH/lobarWMH/${ID}_unidentified_lobarWMH -V | awk '{print $2}'`
-
-
 
 	# --------------------------------
 	# Vol. of WMH in arterial segments
@@ -606,23 +539,6 @@ WMHextraction_kNNdiscovery_Step3(){
 	echo "================================================================" >> ${subj_dir}/${ID}/stats/${ID}_WMH_vol.txt
 	
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 	### --------------------
 	### Count WMH clusters
 	### --------------------
@@ -639,7 +555,7 @@ WMHextraction_kNNdiscovery_Step3(){
 
 	# generate WMH masked FLAIR image
 	${FSLDIR}/bin/fslmaths ${studyFolder}/subjects/${ID}/mri/extractedWMH/${ID}_WMH \
-							-mas $(dirname ${pipelinePath})/Templates/DARTEL_GM_WM_CSF_prob_maps/65to75/DARTEL_WM_prob_map_thr0_8_bin \
+                            -mas $wm_prob_thr \
 							-mul ${studyFolder}/subjects/${ID}/mri/preprocessing/wr${flair_filename} \
 							-nan \
 							-thr 0 \
@@ -657,7 +573,7 @@ WMHextraction_kNNdiscovery_Step3(){
 
 	${FSLDIR}/bin/fslmaths ${studyFolder}/subjects/${ID}/mri/extractedWMH/temp/periventricle_mask_${PVmag} \
 							-binv \
-							-mul $(dirname ${pipelinePath})/Templates/DARTEL_lobar_and_arterial_templates/DARTEL_lobar_template \
+                            -mul $lobar_mask \
 							-add ${studyFolder}/subjects/${ID}/mri/extractedWMH/temp/periventricle_mask_${PVmag}_mul20 \
 							${studyFolder}/subjects/${ID}/mri/extractedWMH/temp/lobar_map_with_PVmag${PVmag}_periventricle
 
@@ -874,7 +790,7 @@ WMHextraction_kNNdiscovery_Step3(){
 								${studyFolder}/subjects/${ID}/mri/extractedWMH/temp/${ID}_cl${clusterInd}_COGonLobTem \
 								-odt int
 
-		${FSLDIR}/bin/fslmaths $(dirname ${pipelinePath})/Templates/DARTEL_lobar_and_arterial_templates/DARTEL_arterial_template \
+		${FSLDIR}/bin/fslmaths $arterial_mask \
 								-roi ${cog_x} 1 ${cog_y} 1 ${cog_z} 1 0 1 \
 								${studyFolder}/subjects/${ID}/mri/extractedWMH/temp/${ID}_cl${clusterInd}_COGonArtTem \
 								-odt int
@@ -1459,8 +1375,12 @@ WMHextraction_kNNdiscovery_Step3(){
 # $3 = pipelinePath
 # $4 = PVWMH magnitude (in mm)
 # $5 = probability threshold as a string
+# $6 = wm_prob_thr
+# $7 = ventricle_mask
+# $8 = lobar_mask
+# $9 = arterial_mask
 
-WMHextraction_kNNdiscovery_Step3 $1 $2 $3 $4 $5
+WMHextraction_kNNdiscovery_Step3 $1 $2 $3 $4 $5 $6 $7 $8 $9
 #> "${2}/${1}/mri/extractedWMH/${1}.log"
 
 

@@ -12,12 +12,13 @@ function WMHextraction_woQC_cmd (studyFolder, ...
                                         classifier, ...
                                         ageRange, ...
                                         probThr, ... % float
-                                        outputFormat ...
+                                        outputFormat, ...
+                                        nsegs ...
                                         )
 
 
     tic;
-    
+
     % training features 
     trainingFeatures1 = 1:9;
     trainingFeatures2 = 10:12;
@@ -26,6 +27,16 @@ function WMHextraction_woQC_cmd (studyFolder, ...
     WMHextractionPath = fileparts(fileparts(fileparts(which([mfilename '.m']))));
     CNSP_path = fileparts (WMHextractionPath);
     addpath (spm12path, genpath(WMHextractionPath), [CNSP_path '/Scripts'], [CNSP_path '/downloaded_scipts/NIfTI_tools']);
+
+    % Initialize our template
+    switch dartelTemplate
+        case 'existing template'
+            template = DartelTemplate(CNSP_path,ageRange,studyFolder);
+        case 'creating template'
+            template = CohortTemplate(strcat(studyFolder,'/subjects'));
+        case 'native template'
+            template = NativeTemplate(CNSP_path,ageRange,studyFolder);
+    end
     
     fprintf ('\n');
     fprintf ('*******************************************\n');
@@ -126,14 +137,14 @@ function WMHextraction_woQC_cmd (studyFolder, ...
     fprintf ('3.1 Running DARTEL ...\n');
     WMHextraction_preprocessing_Step3 (studyFolder, ...
                                         CNSP_path, ...
-                                        dartelTemplate, ...
+                                        template, ...
                                         coregExcldList, ...
                                         segExcldList, ...
                                         ageRange...
                                         ); 
 
     fprintf ('3.2: Bring to DARTEL ...\n');
-    WMHextraction_preprocessing_Step4 (studyFolder, dartelTemplate, coregExcldList, segExcldList, CNSP_path); % Step 4: bring to DARTEL
+    WMHextraction_preprocessing_Step4 (studyFolder, template, coregExcldList, segExcldList, CNSP_path); % Step 4: bring to DARTEL
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % non-brain tissue removal & FSL FAST %
@@ -144,20 +155,26 @@ function WMHextraction_woQC_cmd (studyFolder, ...
 %     cmd_skullStriping_FAST_1 = ['chmod +x ' CNSP_path '/WMH_extraction/WMHextraction_SkullStriping_and_FAST.sh'];
 %     system (cmd_skullStriping_FAST_1);
     
+    %parfor i = 1:Nsubj
     parfor i = 1:Nsubj
         T1imgNames = strsplit (T1folder(i).name, '_');   % split T1 image name, delimiter is underscore
         ID = T1imgNames{1};   % first section is ID
 
         if ismember(ID, excldIDs) == 0
+            subtemp = copy(template);
+            if strcmp(template.name, 'native template')
+                subtemp.subID = i; % need to set the template subject if native
+            end 
 
             cmd_skullStriping_FAST_2 = [CNSP_path '/WMH_extraction/WMHextraction/WMHextraction_SkullStriping_and_FAST.sh ' ...
-                                                                                                                            T1folder(i).name ' ' ...
-                                                                                                                            FLAIRfolder(i).name ' ' ...
-                                                                                                                            studyFolder '/subjects ' ...
-                                                                                                                            ID ' ' ...
-                                                                                                                            CNSP_path ' ' ...
-                                                                                                                            strrep(dartelTemplate, ' ', '_') ' ' ...
-                                                                                                                            ageRange];
+                T1folder(i).name ' '...
+                FLAIRfolder(i).name ' ' ...
+                studyFolder '/subjects ' ...
+                ID ' ' ...
+                subtemp.brain_mask ' ' ...
+                strrep(subtemp.name, ' ', '_') ' ' ...
+                subtemp.gm_prob ' ' ...
+                char(string(nsegs))];
             system (cmd_skullStriping_FAST_2);
         end
 
@@ -175,14 +192,18 @@ function WMHextraction_woQC_cmd (studyFolder, ...
     parfor i = 1:Nsubj
         T1imgNames = strsplit (T1folder(i).name, '_');   % split T1 image name, delimiter is underscore
         ID = T1imgNames{1};   % first section is ID
+        subtemp = copy(template);
+        if strcmp(template.name, 'native template')
+            subtemp.subID = i; % need to set the template subject if native
+        end 
 
         if ismember(ID, excldIDs) == 0
             cmd_kNN_step1_2 = [CNSP_path '/WMH_extraction/WMHextraction/WMHextraction_kNNdiscovery_Step1.sh ' ...
-                                                                                                            ID ' ' ...
-                                                                                                            studyFolder '/subjects ' ...
-                                                                                                            CNSP_path ' ' ...
-                                                                                                            strrep(dartelTemplate, ' ', '_') ' ' ...
-                                                                                                            ageRange];
+                ID ' ' ...
+                studyFolder '/subjects ' ...
+                subtemp.wm_prob_thr ' ' ...
+                strrep(subtemp.name, ' ', '_') ' ' ...
+                char(string(nsegs))];
             system (cmd_kNN_step1_2);
         end
     end
@@ -196,18 +217,20 @@ function WMHextraction_woQC_cmd (studyFolder, ...
     parfor i = 1:Nsubj
         T1imgNames = strsplit (T1folder(i).name, '_');   % split T1 image name, delimiter is underscore
         ID = T1imgNames{1};   % first section is ID
+        subtemp = copy(template);
+        if strcmp(template.name, 'native template')
+            subtemp.subID = i % need to set the template subject if native
+        end 
         
         if ismember(ID, excldIDs) == 0
             WMHextraction_kNNdiscovery_Step2 (k, ...
                                               ID, ...
-                                              CNSP_path, ...
-                                              studyFolder, ...
                                               classifier, ...
-                                              dartelTemplate, ...
-                                              ageRange, ...
+                                              subtemp, ...
                                               probThr, ...
                                               trainingFeatures1, ...
-                                              trainingFeatures2 ...
+                                              trainingFeatures2, ...
+                                              nsegs ...
                                               );
         end
     end
@@ -224,15 +247,23 @@ function WMHextraction_woQC_cmd (studyFolder, ...
     parfor i = 1:Nsubj
         T1imgNames = strsplit (T1folder(i).name, '_');   % split T1 image name, delimiter is underscore
         ID = T1imgNames{1};   % first section is ID
+        subtemp = copy(template);
+        if strcmp(template.name, 'native template')
+            subtemp.subID = i % need to set the template subject if native
+        end 
 
         if ismember(ID, excldIDs) == 0
             cmd_kNN_step3_2 = [CNSP_path '/WMH_extraction/WMHextraction/WMHextraction_kNNdiscovery_Step3.sh ' ...
-                                                                                                ID ' ' ...
-                                                                                                studyFolder '/subjects ' ...
-                                                                                                CNSP_path '/WMH_extraction ' ...
-                                                                                                PVWMH_magnitude ' ' ...
-                                                                                                probThr_str ...
-                                                                                                ];
+                        ID ' ' ...
+                        studyFolder '/subjects ' ...
+                        CNSP_path '/WMH_extraction ' ...
+                        PVWMH_magnitude ' ' ...
+                        probThr_str ' ' ...
+                        subtemp.wm_prob_thr ' ' ...
+                        subtemp.ventricles ' ' ...
+                        subtemp.lobar ' ' ...
+                        subtemp.arterial ' ' 
+                        ];
             system (cmd_kNN_step3_2);
         end
     end
@@ -286,60 +317,61 @@ function WMHextraction_woQC_cmd (studyFolder, ...
     %         fprintf ('Download link: %s/subjects/QC/QC_final/QC_final.zip\n', studyFolder);
     % end
     
+    
+    if ~strcmp(template.name, 'native template')
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %% Bring back to native space %%
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        fprintf ('3.6 Bringing DARTEL space WMH mask to native space ...\n');
 
 
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %% Bring back to native space %%
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    fprintf ('3.6 Bringing DARTEL space WMH mask to native space ...\n');
-
-
-    parfor i = 1:Nsubj
-        T1imgNames = strsplit (T1folder(i).name, '_');   % split T1 image name, delimiter is underscore
-        ID = T1imgNames{1};   % first section is ID
-        
-        if ismember(ID, excldIDs) == 0
-            switch dartelTemplate
-            case 'existing template'
-                WMHresultsBack2NativeSpace (studyFolder, ID, spm12path);
-            case 'creating template'
-                WMHresultsBack2NativeSpace (studyFolder, ID, spm12path, '', 'creating template');
+        parfor i = 1:Nsubj
+            T1imgNames = strsplit (T1folder(i).name, '_');   % split T1 image name, delimiter is underscore
+            ID = T1imgNames{1};   % first section is ID
+            
+            if ismember(ID, excldIDs) == 0
+                switch template.name
+                case 'existing template'
+                    WMHresultsBack2NativeSpace (studyFolder, ID, spm12path);
+                case 'creating template'
+                    WMHresultsBack2NativeSpace (studyFolder, ID, spm12path, '', 'creating template');
+                end
             end
         end
-    end
 
-    % webpage display
-    % [~, NexcldIDs] = size (excldIDs);
-    % indFLAIR_cellArr = cell ((Nsubj - NexcldIDs), 1);
-    % indWMH_FLAIRspace_cellArr = cell ((Nsubj - NexcldIDs), 1);
-    indFLAIR_cellArr = cell (Nsubj, 1);
-    indWMH_FLAIRspace_cellArr = cell (Nsubj, 1);
+        % webpage display
+        % [~, NexcldIDs] = size (excldIDs);
+        % indFLAIR_cellArr = cell ((Nsubj - NexcldIDs), 1);
+        % indWMH_FLAIRspace_cellArr = cell ((Nsubj - NexcldIDs), 1);
+        indFLAIR_cellArr = cell (Nsubj, 1);
+        indWMH_FLAIRspace_cellArr = cell (Nsubj, 1);
 
-    for i = 1:Nsubj
-        T1imgNames = strsplit (T1folder(i).name, '_');   % split T1 image name, delimiter is underscore
-        ID = T1imgNames{1};   % first section is ID
-        
-        if ismember (ID, excldIDs) == 0
-            indFLAIR_cellArr{i,1} = strcat (studyFolder,'/originalImg/FLAIR/', FLAIRfolder(i).name);
+        for i = 1:Nsubj
+            T1imgNames = strsplit (T1folder(i).name, '_');   % split T1 image name, delimiter is underscore
+            ID = T1imgNames{1};   % first section is ID
             
-            indWMH_FLAIRspace_cellArr{i,1} = [studyFolder '/subjects/' ID '/mri/extractedWMH/' ID '_WMH_FLAIRspace.nii.gz'];
-            
-        else % if ID is excluded, display the FLAIR image twice
-            indFLAIR_cellArr{i,1} = strcat (studyFolder,'/originalImg/FLAIR/', FLAIRfolder(i).name);
-            
-            indWMH_FLAIRspace_cellArr{i,1} = strcat (studyFolder,'/originalImg/FLAIR/', FLAIRfolder(i).name);
+            if ismember (ID, excldIDs) == 0
+                indFLAIR_cellArr{i,1} = strcat (studyFolder,'/originalImg/FLAIR/', FLAIRfolder(i).name);
+                
+                indWMH_FLAIRspace_cellArr{i,1} = [studyFolder '/subjects/' ID '/mri/extractedWMH/' ID '_WMH_FLAIRspace.nii.gz'];
+                
+            else % if ID is excluded, display the FLAIR image twice
+                indFLAIR_cellArr{i,1} = strcat (studyFolder,'/originalImg/FLAIR/', FLAIRfolder(i).name);
+                
+                indWMH_FLAIRspace_cellArr{i,1} = strcat (studyFolder,'/originalImg/FLAIR/', FLAIRfolder(i).name);
+            end
         end
-    end
 
-    if exist ([studyFolder '/subjects/QC/QC_final_native'], 'dir') ~= 7
-        mkdir ([studyFolder '/subjects/QC'], 'QC_final_native');
-    end
+        if exist ([studyFolder '/subjects/QC/QC_final_native'], 'dir') ~= 7
+            mkdir ([studyFolder '/subjects/QC'], 'QC_final_native');
+        end
 
-    CNSP_webViewSlices_overlay (indFLAIR_cellArr, ...
-                                indWMH_FLAIRspace_cellArr, ...
-                                [studyFolder '/subjects/QC/QC_final_native'], ...
-                                'QC_final_native', ...
-                                'arch');
+        CNSP_webViewSlices_overlay (indFLAIR_cellArr, ...
+                                    indWMH_FLAIRspace_cellArr, ...
+                                    [studyFolder '/subjects/QC/QC_final_native'], ...
+                                    'QC_final_native', ...
+                                    'arch');
+    end 
 
 
     %%%%%%%%%%%%%%%%%%%%%%
