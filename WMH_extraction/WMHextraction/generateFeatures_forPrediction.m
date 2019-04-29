@@ -152,6 +152,9 @@ function generateFeatures_forPrediction (ID, subj_dir, template, nsegs)
                 ventricle_distance_values(k) = Vent_distanceMap_nii_img(x,y,z);
             end
 
+            clusterMasked_t1_mean = mean(t1_values);
+            clusterMasked_flair_mean = mean(flair_values);
+
             % Intensity features
             feature1 = (clusterMasked_t1_mean)/(MI_GM_t1); %%%%%%%%% FEATURE 1 %%%%%%%%%%%%%
             feature2 = (clusterMasked_flair_mean)/(MI_GM_flair); %%%%%%%%% FEATURE 2 %%%%%%%%%%%%%
@@ -166,7 +169,7 @@ function generateFeatures_forPrediction (ID, subj_dir, template, nsegs)
             feature6 = mean(gm_prob_values);
             feature7 = mean(wm_prob_values);
             feature8 = mean(csf_prob_values);
-            feature9 = mean(ventricle_prob_values);
+            feature9 = mean(ventricle_distance_values);
             feature10 = -1;
             feature11 = -1;
             feature12 = -1;
