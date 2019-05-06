@@ -7,9 +7,13 @@ Welcome to CNS's documentation!
 ===============================
 
 .. toctree::
+   :hidden:
    :maxdepth: 2
+   :glob:
    :caption: Contents:
 
+   install/install
+   code/*
 
 
 Indices and tables
@@ -17,22 +21,3 @@ Indices and tables
 
 * :ref:`genindex`
 * :ref:`search`
-
-TemplateClasses
-===============
-
-.. automodule:: WMH_extraction.TemplateClasses
-
-:mod:`WMH_extraction.TemplateClasses` is a collection of classes used to provide information and paths relavent to the Template they help implement.
-
-AbstractTemplate
-----------------
-.. autoclass:: WMH_extraction.TemplateClasses.AbstractTemplate
-    :show-inheritance:
-    :members:
-
-CohortTemplate
---------------
-.. autoclass:: WMH_extraction.TemplateClasses.CohortTemplate
-    :show-inheritance:
-    :members:
