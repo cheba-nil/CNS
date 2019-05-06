@@ -2856,7 +2856,7 @@ function WMHextraction_main_inGUI_Stage3 (studyFolder, ...
     progressOutputCellArray_Stage3 {end+1} = 'Step 4: Bring T1, FLAIR, as well as GM, WM and CSF segmentations to DARTEL ...';
     set (progressOutput, 'String', progressOutputCellArray_Stage3);
     drawnow;
-    WMHextraction_preprocessing_Step4 (studyFolder, dartelTemplate, coregExcldList, segExcldList, CNSP_path);
+    WMHextraction_preprocessing_Step4 (studyFolder, template, coregExcldList, segExcldList, CNSP_path);
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %% non-brain tissue removal & FSL FAST %%
@@ -3293,7 +3293,7 @@ function WMHextraction_main_noQCstops (studyFolder, ...
     progressOutputCellArray {end+1} = 'Step 4: Bring T1, FLAIR, as well as GM, WM and CSF segmentations to DARTEL ...';
     set (progressOutput, 'String', progressOutputCellArray);
     drawnow;
-    WMHextraction_preprocessing_Step4 (studyFolder, dartelTemplate, coregExcldList, segExcldList, CNSP_path); % Step 4: bring to DARTEL
+    WMHextraction_preprocessing_Step4 (studyFolder, template, coregExcldList, segExcldList, CNSP_path); % Step 4: bring to DARTEL
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %% non-brain tissue removal & FSL FAST %%
