@@ -842,6 +842,8 @@ function diffDARTELrun_menu_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 tic;
 
+nsegs=3;
+
 SPMpath = get(handles.SPMDir_Edit,'String');
 addpath(SPMpath);
 studyFolder = get(handles.StudyDir_Edit, 'String');
@@ -1246,6 +1248,8 @@ function diffKNNrun_menu_Callback(hObject, eventdata, handles)
 % outputTxt = get(handles.progressOutput,'String');
 tic;
 
+nsegs=3;
+
 SPMpath = get(handles.SPMDir_Edit,'String');
 studyFolder = get(handles.StudyDir_Edit, 'String');
 setappdata (0, 'studyFolder', studyFolder);
@@ -1585,6 +1589,7 @@ function diffKNNrun_Advanced_menu_Callback(hObject, eventdata, handles)
 % hObject    handle to diffKNNrun_Advanced_menu (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+nsegs=3;
 studyFolder = get(handles.StudyDir_Edit, 'String');
 CNSP_path = getappdata(0,'CNSP_path');
 coregExcldList = get(handles.coregQC_edit,'String');
@@ -1871,6 +1876,7 @@ function diffProbThrRun_menu_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 tic;
+nsegs=3;
 
 SPMpath = get(handles.SPMDir_Edit,'String');
 studyFolder = get(handles.StudyDir_Edit, 'String');
@@ -2221,6 +2227,7 @@ function diffPVmagRun_menu_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % outputTxt = get(handles.progressOutput,'String');
+nsegs=3;
 outputTxt{1} = '';
 outputTxt{end+1} = '---=== Re-extract with a different PVWMH magnitude ===---';
 outputTxt{end+1} = '';
@@ -2647,6 +2654,7 @@ manEdtID_GUI;
 function WMHextraction_main_inGUI_Stage1 (studyFolder, spm12path, progressOutput, outputFormat)
 
     tic;
+    nsegs=3;
     addpath (spm12path);
     
     CNSP_path = getappdata(0,'CNSP_path');
@@ -2764,6 +2772,7 @@ function WMHextraction_main_inGUI_Stage1 (studyFolder, spm12path, progressOutput
  function WMHextraction_main_inGUI_Stage2 (studyFolder, spm12path, progressOutput, coregExcldList, outputFormat)
      
     addpath (spm12path);
+    nsegs=3;
     CNSP_path = getappdata(0,'CNSP_path');
     
     progressOutputCellArray_Stage2 = get (progressOutput, 'String');
@@ -2820,6 +2829,7 @@ function WMHextraction_main_inGUI_Stage3 (studyFolder, ...
                                             )
 
     tic;
+    nsegs=3;
     
     addpath (spm12path);
     CNSP_path = getappdata (0,'CNSP_path');
@@ -3161,6 +3171,7 @@ function WMHextraction_main_noQCstops (studyFolder, ...
 
 
     tic;
+    nsegs=3;
     
     addpath (spm12path);
     CNSP_path = getappdata (0,'CNSP_path');
