@@ -1,36 +1,37 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % AbstractTemplate.m
-% 
-% To add a new template, create a new class
-% which inherits from AbstractTemplate
-% and fills out the specified properties
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 classdef (Abstract) AbstractTemplate < matlab.mixin.Copyable
+    % Base class for to be used for templates
+    % 
+    % To add a new template, create a new class
+    % which inherits from AbstractTemplate
+    % and fills out the specified properties
+
     properties (Abstract)
-        % Name, for compatibility with legacy code
         name
-
-        % Brain Mask
+        % Name, for compatibility with original code
         brain_mask
-
-        % Probability Maps
+        % path to the binary brain mask for this template
         gm_prob
+        % path to grey matter probability map
         wm_prob
+        % path to white matter probability map
         csf_prob
-
-        % Thresholded (p >= 0.8) Probability Maps
+        % path to CSF probability map
         gm_prob_thr
+        % path to thresholded grey matter probability map
         wm_prob_thr
-
-        % Ventricle Distance
+        % path to thresholded white matter probability map
         ventricles
-        
-        % Arterial and Lobar templates
+        % path to ventricle distance map
         lobar
+        % path to lobar segmentation mask
         arterial
-
+        % path to arterial segmentation mask
+        space
         % For convenience, perhaps we store
         % the 'space' of this template?
-        space
+        % ... I don't think this is currently used
     end
 end
