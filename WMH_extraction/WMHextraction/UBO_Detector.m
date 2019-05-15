@@ -864,14 +864,26 @@ end
 
 switch DARTELtemplate123
     case 1
-        prevAgeRange = '65to75';  
+        prevAgeRange = 'lt55';  
         prevDARTELtemplate = 'existing template';
     case 2
-        prevAgeRange = '70to80';
+        prevAgeRange = '65to75';  
         prevDARTELtemplate = 'existing template';
     case 3
+        prevAgeRange = '70to80';
+        prevDARTELtemplate = 'existing template';
+    case 4
         prevAgeRange = 'NA';
         prevDARTELtemplate = 'creating template';
+    case 5
+        DARTELtemplate = 'native template';
+        ageRange = 'lt55';
+    case 6
+        DARTELtemplate = 'native template';
+        ageRange = '65to75';
+    case 7
+        DARTELtemplate = 'native template';
+        ageRange = '70to80';
 end
 prevk = get(handles.k_edit,'String');
 classifier_popup = get(handles.kNNclassifier_popupmenu,'Value');
@@ -1261,14 +1273,26 @@ DARTELtemplate123 = get (handles.DARTELtemplate_popupmenu, 'Value');
 
 switch DARTELtemplate123
     case 1
-        prevAgeRange = '65to75';  
+        prevAgeRange = 'lt55';  
         prevDARTELtemplate = 'existing template';
     case 2
-        prevAgeRange = '70to80';
+        prevAgeRange = '65to75';  
         prevDARTELtemplate = 'existing template';
     case 3
+        prevAgeRange = '70to80';
+        prevDARTELtemplate = 'existing template';
+    case 4
         prevAgeRange = 'NA';
         prevDARTELtemplate = 'creating template';
+    case 5
+        DARTELtemplate = 'native template';
+        ageRange = 'lt55';
+    case 6
+        DARTELtemplate = 'native template';
+        ageRange = '65to75';
+    case 7
+        DARTELtemplate = 'native template';
+        ageRange = '70to80';
 end
 
 prevk = get(handles.k_edit,'String');
@@ -1598,21 +1622,26 @@ excldIDs = strsplit([coregExcldList ' ' segExcldList], ' ');
 DARTELtemplate123 = get (handles.DARTELtemplate_popupmenu, 'Value');
 switch DARTELtemplate123
     case 1
-        prevAgeRange = 'lt55';
+        prevAgeRange = 'lt55';  
         prevDARTELtemplate = 'existing template';
-        ageRange = 'lt55';
     case 2
         prevAgeRange = '65to75';  
         prevDARTELtemplate = 'existing template';
-        ageRange = '65to75';
     case 3
         prevAgeRange = '70to80';
         prevDARTELtemplate = 'existing template';
-        ageRange = '70-80';
     case 4
         prevAgeRange = 'NA';
         prevDARTELtemplate = 'creating template';
-        ageRange = 'NA';
+    case 5
+        DARTELtemplate = 'native template';
+        ageRange = 'lt55';
+    case 6
+        DARTELtemplate = 'native template';
+        ageRange = '65to75';
+    case 7
+        DARTELtemplate = 'native template';
+        ageRange = '70to80';
 end
 prevk = get(handles.k_edit,'String');
 classifier_popup = get(handles.kNNclassifier_popupmenu,'Value');
@@ -1888,14 +1917,26 @@ excldIDs = strsplit([coregExcldList ' ' segExcldList], ' ');
 DARTELtemplate123 = get (handles.DARTELtemplate_popupmenu, 'Value');
 switch DARTELtemplate123
     case 1
-        prevAgeRange = '65to75';  
+        prevAgeRange = 'lt55';  
         prevDARTELtemplate = 'existing template';
     case 2
-        prevAgeRange = '70to80';
+        prevAgeRange = '65to75';  
         prevDARTELtemplate = 'existing template';
     case 3
+        prevAgeRange = '70to80';
+        prevDARTELtemplate = 'existing template';
+    case 4
         prevAgeRange = 'NA';
         prevDARTELtemplate = 'creating template';
+    case 5
+        DARTELtemplate = 'native template';
+        ageRange = 'lt55';
+    case 6
+        DARTELtemplate = 'native template';
+        ageRange = '65to75';
+    case 7
+        DARTELtemplate = 'native template';
+        ageRange = '70to80';
 end
 prevk = get(handles.k_edit,'String');
 classifier_popup = get(handles.kNNclassifier_popupmenu,'Value');
@@ -2246,14 +2287,26 @@ excldIDs = strsplit([coregExcldList ' ' segExcldList], ' ');
 DARTELtemplate123 = get (handles.DARTELtemplate_popupmenu, 'Value');
 switch DARTELtemplate123
     case 1
-        prevDARtem = 'existing template';
-        prevAgeRange = '65to75';
+        prevAgeRange = 'lt55';  
+        prevDARTELtemplate = 'existing template';
     case 2
-        prevDARtem = 'existing template';
-        prevAgeRange = '70to80';
+        prevAgeRange = '65to75';  
+        prevDARTELtemplate = 'existing template';
     case 3
-        prevDARtem = 'creating template';
+        prevAgeRange = '70to80';
+        prevDARTELtemplate = 'existing template';
+    case 4
         prevAgeRange = 'NA';
+        prevDARTELtemplate = 'creating template';
+    case 5
+        DARTELtemplate = 'native template';
+        ageRange = 'lt55';
+    case 6
+        DARTELtemplate = 'native template';
+        ageRange = '65to75';
+    case 7
+        DARTELtemplate = 'native template';
+        ageRange = '70to80';
 end
 prevk = get(handles.k_edit,'String');
 classifier_popup = get(handles.kNNclassifier_popupmenu,'Value');
