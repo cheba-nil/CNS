@@ -12,12 +12,14 @@ usage(){
 	echo "                     -n, --numWorkers                            	  Number of workers"
 	echo "                     -t, --template                            	  Template choice \"native template\" or \"existing template\""
 	echo "                     -S, --segmentations                            Number of segmentations"
+    echo "                     -T, --tidy                                     Delete intermediate files after completion"
 	
 	echo ""
 	exit 1
 }
 template='existing template'
 nsegs=3
+tidy=''
 
 for arg in $@
 do
@@ -81,6 +83,10 @@ do
 
 				            ;;
                             
+        -T | --tidy)
+            tidy='true'
+            shift 1 
+        ;;
         -*)
 			usage
             ;;
@@ -126,14 +132,22 @@ else
         </dev/null
 
 	echo "CNSP: WMH extraction finished."
-	echo "Coregistration QC download link: ${studyFolder}/subjects/QC/QC_coreg/QC_coregistration.zip"
-	echo "Segmentation QC download link: ${studyFolder}/subjects/QC/QC_seg/QC_segmentation.zip"
-	echo "Final QC download link: ${studyFolder}/subjects/QC/QC_final/QC_final.zip"
-	echo "WMH summary: ${studyFolder}/subjects/WMH_spreadsheet.txt"
 fi
 
+if [ $tidy != '' ]; then
+    # tidy up
+    orig_dir=$(pwd)
 
-
-
-
-
+    cd ${studyFolder}
+    rm *.nii
+    rm -r originalImg
+    rm -r subjects/QC
+    for sub in $(ls subjects); do
+        rm -r subjects/$sub/NativeTemplate 
+        rm -r subjects/$sub/mri/kNN_intermediateOutput
+        rm -r subjects/$sub/mri/orig
+        rm -r subjects/$sub/mri/preprocessing
+        rm subjects/$sub/mri/extractedWMH/temp/${sub}_seg?.nii
+        rm subjects/$sub/mri/extractedWMH/${sub}_ProbMap_FWMH3mmSmooth.nii.gz
+    done 
+fi
