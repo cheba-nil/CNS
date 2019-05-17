@@ -150,4 +150,5 @@ if [ $tidy != '' ]; then
         rm subjects/$sub/mri/extractedWMH/temp/${sub}_seg?.nii
         rm subjects/$sub/mri/extractedWMH/${sub}_ProbMap_FWMH3mmSmooth.nii.gz
     done 
+    cd $orig_dir
 fi
