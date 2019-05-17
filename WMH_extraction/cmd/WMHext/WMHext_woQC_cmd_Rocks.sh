@@ -140,7 +140,7 @@ if [ $tidy != '' ]; then
 
     cd ${studyFolder}
     rm *.nii
-    rm -r originalImg
+    #rm -r originalImg
     rm -r subjects/QC
     for sub in $(ls subjects); do
         rm -r subjects/$sub/NativeTemplate 
