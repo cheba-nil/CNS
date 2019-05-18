@@ -138,10 +138,14 @@ if [ $tidy != '' ]; then
     # tidy up
     orig_dir=$(pwd)
 
+    rm rr*_FLAIR.nii*
     cd ${studyFolder}
-    rm *.nii
+    rm rr*_FLAIR.nii*
+    #rm *.nii
     #rm -r originalImg
     rm -r subjects/QC
+    rm -r subjects/coregQCfailure
+    rm -r subjects/segQCfailure 
     for sub in $(ls subjects); do
         rm -r subjects/$sub/NativeTemplate 
         rm -r subjects/$sub/mri/kNN_intermediateOutput
