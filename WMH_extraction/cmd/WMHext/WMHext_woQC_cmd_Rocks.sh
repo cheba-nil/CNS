@@ -134,7 +134,7 @@ else
 	echo "CNSP: WMH extraction finished."
 fi
 
-if [ $tidy != '' ]; then
+if [ "$tidy" != "" ]; then
     # tidy up
     orig_dir=$(pwd)
 
