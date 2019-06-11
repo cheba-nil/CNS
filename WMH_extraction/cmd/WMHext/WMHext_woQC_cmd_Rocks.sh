@@ -151,7 +151,7 @@ if [ "$tidy" != "" ]; then
         rm -r subjects/$sub/mri/kNN_intermediateOutput
         rm -r subjects/$sub/mri/orig
         rm -r subjects/$sub/mri/preprocessing
-        #rm subjects/$sub/mri/extractedWMH/temp/${sub}_seg?.nii
+        rm subjects/$sub/mri/extractedWMH/temp/${sub}_seg?.nii
         rm subjects/$sub/mri/extractedWMH/${sub}_WMH_ProbMap_FWMH3mmSmooth.nii.gz
     done 
     cd $orig_dir
