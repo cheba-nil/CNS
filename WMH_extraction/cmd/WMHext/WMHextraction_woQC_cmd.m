@@ -78,6 +78,8 @@ function WMHextraction_woQC_cmd (studyFolder, ...
     
     % gunzip niftis
     parfor i = 1:Nsubj
+        T1imgNames = strsplit (T1folder(i).name, '_');   % split T1 image name, delimiter is underscore
+        ID = T1imgNames{1};   % first section is ID
         CNSP_gunzipnii ([studyFolder '/originalImg/T1/' T1folder(i).name]);
         CNSP_gunzipnii ([studyFolder '/originalImg/FLAIR/' FLAIRfolder(i).name]);
     end
@@ -165,6 +167,7 @@ function WMHextraction_woQC_cmd (studyFolder, ...
             if strcmp(template.name, 'native template')
                 subtemp.subID = i; % need to set the template subject if native
             end 
+            subject_log('Running WMHextraction_SkullStriping_and_FAST ...\n\n',studyFolder,ID)
 
             cmd_skullStriping_FAST_2 = [CNSP_path '/WMH_extraction/WMHextraction/WMHextraction_SkullStriping_and_FAST.sh ' ...
                 T1folder(i).name ' '...
@@ -175,7 +178,8 @@ function WMHextraction_woQC_cmd (studyFolder, ...
                 strrep(subtemp.name, ' ', '_') ' ' ...
                 subtemp.gm_prob ' ' ...
                 char(string(nsegs))];
-            system (cmd_skullStriping_FAST_2);
+            [status,cmdout] = system (cmd_skullStriping_FAST_2);
+            subject_log(cmdout,studyFolder,ID)
         end
 
     end
@@ -198,13 +202,15 @@ function WMHextraction_woQC_cmd (studyFolder, ...
         end 
 
         if ismember(ID, excldIDs) == 0
+            subject_log('Running WMHextraction_kNNdiscovery_Step1.sh ...\n\n',studyFolder,ID)
             cmd_kNN_step1_2 = [CNSP_path '/WMH_extraction/WMHextraction/WMHextraction_kNNdiscovery_Step1.sh ' ...
                 ID ' ' ...
                 studyFolder '/subjects ' ...
                 subtemp.wm_prob_thr ' ' ...
                 strrep(subtemp.name, ' ', '_') ' ' ...
                 char(string(nsegs))];
-            system (cmd_kNN_step1_2);
+            [status,cmdout] = system (cmd_kNN_step1_2);
+            subject_log(cmdout,studyFolder,ID)
         end
     end
 
@@ -223,6 +229,7 @@ function WMHextraction_woQC_cmd (studyFolder, ...
         end 
         
         if ismember(ID, excldIDs) == 0
+            subject_log('Running WMHextraction_kNNdiscovery_Step2 ...\n\n',studyFolder,ID)
             WMHextraction_kNNdiscovery_Step2 (k, ...
                                               ID, ...
                                               classifier, ...
@@ -253,6 +260,7 @@ function WMHextraction_woQC_cmd (studyFolder, ...
         end 
 
         if ismember(ID, excldIDs) == 0
+            subject_log('Running WMHextraction_kNNdiscovery_Step3.sh...\n\n',studyFolder,ID)
             cmd_kNN_step3_2 = [CNSP_path '/WMH_extraction/WMHextraction/WMHextraction_kNNdiscovery_Step3.sh ' ...
                         ID ' ' ...
                         studyFolder '/subjects ' ...
@@ -264,7 +272,8 @@ function WMHextraction_woQC_cmd (studyFolder, ...
                         subtemp.lobar ' ' ...
                         subtemp.arterial ' ' 
                         ];
-            system (cmd_kNN_step3_2);
+            [status,cmdout] = system (cmd_kNN_step3_2);
+            subject_log(cmdout,studyFolder,ID)
         end
     end
 
@@ -292,8 +301,10 @@ function WMHextraction_woQC_cmd (studyFolder, ...
         ID = T1imgNames{1};   % first section is ID
 
         if ismember(ID, excldIDs) == 0
+            subject_log('Running WMHextraction_kNNdiscovery_Step4.sh ...\n\n',studyFolder,ID)
             cmd_merge_WMHresults_4 = [CNSP_path '/WMH_extraction/WMHextraction/WMHextraction_kNNdiscovery_Step4.sh ' ID ' ' studyFolder '/subjects'];
-            system (cmd_merge_WMHresults_4);
+            [status,cmdout] = system (cmd_merge_WMHresults_4);
+            subject_log(cmdout,studyFolder,ID)
         end
     end                                
 

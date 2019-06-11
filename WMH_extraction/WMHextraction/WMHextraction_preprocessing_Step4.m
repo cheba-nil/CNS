@@ -28,6 +28,7 @@ function WMHextraction_preprocessing_Step4 (studyFolder, template, coregExcldLis
         T1imgFileNames = strsplit (T1folder(i).name, '.');
         ID = T1imgNames{1};   % first section is ID
         T1imgFileName = T1imgFileNames{1};
+        subject_log('Running WMHextraction_preprocessing_Step4 ... \n\n',studyFolder,ID)
         subtemp = copy(template)
 
         if ismember(ID, excldIDs) == 0

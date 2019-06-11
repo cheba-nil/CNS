@@ -20,7 +20,8 @@ parfor i = 1:Nsubj
 
     T1imgNames = strsplit (T1folder(i).name, '_');   % split T1 image name, delimiter is underscore
     ID = T1imgNames{1};   % first section is ID
-    
+    subject_log('Running WMHextraction_preprocessing_Step1 ... \n\n',studyFolder,ID)    
+
     matlabbatch = [];   % preallocate to enable parfor
     spm_jobman('initcfg');
     

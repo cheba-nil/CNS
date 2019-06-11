@@ -31,6 +31,7 @@ function WMHextraction_preprocessing_Step2 (studyFolder, spm12path, coregExcldLi
 
         T1imgNames = strsplit (T1folder(i).name, '_');   % split T1 image name, delimiter is underscore
         ID = T1imgNames{1};   % first section is ID
+        subject_log('Running WMHextraction_preprocessing_Step2 ... \n\n',studyFolder,ID)
 
         if ismember(ID, coregExcldIDs) == 0
             

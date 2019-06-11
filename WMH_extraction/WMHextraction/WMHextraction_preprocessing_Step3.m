@@ -53,11 +53,13 @@ function nativeTemplateRun(template,coregExcldList,segExcldList)
     
     % generate a template foreach subject
     parfor i = 1:Nsubj
+
         subtemp = class_array(i);  % get copy to make this parfor friendly
         subtemp.subID = i; % set the subject ID
 
         T1imgNames = strsplit (T1folder(i).name, '_');   % split T1 image name, delimiter is underscore
         ID = T1imgNames{1};   % first section is ID
+        subject_log('Running WMHextraction_preprocessing_Step3 (Native Template) ... \n\n',template.studyFolder,ID)
 
         if ismember(ID, excldIDs) == 0
             subtemp.generate();
@@ -106,6 +108,7 @@ function existingTemplateDARTELrun (studyFolder, CNSP_path, coregExcldList, segE
 
         T1imgNames = strsplit (T1folder(i).name, '_');   % split T1 image name, delimiter is underscore
         ID = T1imgNames{1};   % first section is ID
+        subject_log('Running WMHextraction_preprocessing_Step3 (Existing Template) ... \n\n',studyFolder,ID)
 
         if ismember(ID, excldIDs) == 0
 
