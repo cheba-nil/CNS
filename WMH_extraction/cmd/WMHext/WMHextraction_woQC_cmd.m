@@ -82,83 +82,50 @@ function WMHextraction_woQC_cmd (studyFolder, ...
         ID = T1imgNames{1};   % first section is ID
         CNSP_gunzipnii ([studyFolder '/originalImg/T1/' T1folder(i).name]);
         CNSP_gunzipnii ([studyFolder '/originalImg/FLAIR/' FLAIRfolder(i).name]);
-    end
 
-    % re-list all T1 and FLAIR (all .nii)
-    T1folder = dir (strcat (studyFolder,'/originalImg/T1/*.nii'));
-    FLAIRfolder = dir (strcat (studyFolder,'/originalImg/FLAIR/*.nii'));
-    [Nsubj,n] = size (T1folder);
-    
-    % create a folder for each subject under subjects
-    % folder, using ID as folder name. Copy corresponding T1 and FLAIR to the
-    % orig folder of each subject
-    parfor i = 1:Nsubj
-        T1imgNames = strsplit (T1folder(i).name, '_');   % split T1 image name, delimiter is underscore
-        ID = T1imgNames{1};   % first section is ID
         mkdir (strcat(studyFolder,'/subjects/',ID,'/mri'),'orig');  % create orig folder under each subject folder
         copyfile (strcat (studyFolder,'/originalImg/T1/', T1folder(i).name), strcat(studyFolder,'/subjects/',ID,'/mri/orig/'));        % copy T1 to each subject folder
         copyfile (strcat (studyFolder,'/originalImg/FLAIR/', FLAIRfolder(i).name), strcat(studyFolder,'/subjects/',ID,'/mri/orig/'));  % copy FLAIR to each subject folder
-    end
 
     
-    %%%%%%%%%%%%%%%%%
-    % Run SPM steps %
-    %%%%%%%%%%%%%%%%%
-    fprintf ('WMH extraction step 1: T1 & FLAIR coregistration ...\n');
-    WMHextraction_preprocessing_Step1 (studyFolder); % Step 1: coregistration
-    
-    fprintf ('Generating coregistration QC images ...\n');
-    WMHextraction_QC_1 (studyFolder, outputFormat); % coregistration QC
-    
-%     switch outputFormat
-%         case 'web'
-%             % display on screen
-%         case 'arch'
-%             fprintf (['Download link: ' studyFolder '/subjects/QC/QC_coreg/QC_coregistration.zip\n']);
-%         case 'web&arch'
-%             fprintf (['Download link: ' studyFolder '/subjects/QC/QC_coreg/QC_coregistration.zip\n']);
-%     end
+        %%%%%%%%%%%%%%%%%
+        % Run SPM steps %
+        %%%%%%%%%%%%%%%%%
+        fprintf ('WMH extraction step 1: T1 & FLAIR coregistration ...\n');
+        WMHextraction_preprocessing_Step1 (studyFolder,i); % Step 1: coregistration
+        
+        %fprintf ('Generating coregistration QC images ...\n');
+        % TODO: figure out what to do here
+        %WMHextraction_QC_1 (studyFolder, outputFormat); % coregistration QC
+        
 
-    fprintf ('WMH extraction step 2: T1 segmentation ...\n');
-    WMHextraction_preprocessing_Step2 (studyFolder, spm12path, coregExcldList); % Step 2: segmentation
-  
-    fprintf ('Generating segmentation QC images ...\n');
-    WMHextraction_QC_2 (studyFolder, coregExcldList, outputFormat); % segmentation QC
-    
-%     switch outputFormat
-%         case 'web'
-%             % display on screen
-%         case 'arch'
-%             fprintf (['Download link: ' studyFolder '/subjects/QC/QC_seg/QC_segmentation.zip\n']);
-%         case 'web&arch'
-%             fprintf (['Download link: ' studyFolder '/subjects/QC/QC_seg/QC_segmentation.zip\n']);
-%     end
-   
-    fprintf ('WMH extraction step 3: Running DARTEL ...\n');
-    
-    fprintf ('3.1 Running DARTEL ...\n');
-    WMHextraction_preprocessing_Step3 (studyFolder, ...
-                                        CNSP_path, ...
-                                        template, ...
-                                        coregExcldList, ...
-                                        segExcldList, ...
-                                        ageRange...
-                                        ); 
+        fprintf ('WMH extraction step 2: T1 segmentation ...\n');
+        WMHextraction_preprocessing_Step2 (studyFolder, spm12path, coregExcldList,i); % Step 2: segmentation
+      
+        %fprintf ('Generating segmentation QC images ...\n');
+        % TODO: figure out what to do here
+        %WMHextraction_QC_2 (studyFolder, coregExcldList, outputFormat); % segmentation QC
+        
+        fprintf ('WMH extraction step 3: Running DARTEL ...\n');
+        
+        fprintf ('3.1 Running DARTEL ...\n');
+        WMHextraction_preprocessing_Step3 (studyFolder, ...
+                                            CNSP_path, ...
+                                            template, ...
+                                            coregExcldList, ...
+                                            segExcldList, ...
+                                            ageRange,...
+                                            i); 
 
-    fprintf ('3.2: Bring to DARTEL ...\n');
-    WMHextraction_preprocessing_Step4 (studyFolder, template, coregExcldList, segExcldList, CNSP_path); % Step 4: bring to DARTEL
+        fprintf ('3.2: Bring to DARTEL ...\n');
+        WMHextraction_preprocessing_Step4 (studyFolder, template, coregExcldList, segExcldList, CNSP_path,i); % Step 4: bring to DARTEL
 
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % non-brain tissue removal & FSL FAST %
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % non-brain tissue removal & FSL FAST %
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        
+        fprintf ('3.3 WMH extraction using kNN ...\n');
     
-    fprintf ('3.3 WMH extraction using kNN ...\n');
-    
-%     cmd_skullStriping_FAST_1 = ['chmod +x ' CNSP_path '/WMH_extraction/WMHextraction_SkullStriping_and_FAST.sh'];
-%     system (cmd_skullStriping_FAST_1);
-    
-    %parfor i = 1:Nsubj
-    parfor i = 1:Nsubj
         T1imgNames = strsplit (T1folder(i).name, '_');   % split T1 image name, delimiter is underscore
         ID = T1imgNames{1};   % first section is ID
 
@@ -167,7 +134,7 @@ function WMHextraction_woQC_cmd (studyFolder, ...
             if strcmp(template.name, 'native template')
                 subtemp.subID = i; % need to set the template subject if native
             end 
-            subject_log('Running WMHextraction_SkullStriping_and_FAST ...\n\n',studyFolder,ID)
+            subject_log('Running WMHextraction_SkullStriping_and_FAST ...\n\n',studyFolder,ID);
 
             cmd_skullStriping_FAST_2 = [CNSP_path '/WMH_extraction/WMHextraction/WMHextraction_SkullStriping_and_FAST.sh ' ...
                 T1folder(i).name ' '...
@@ -179,30 +146,13 @@ function WMHextraction_woQC_cmd (studyFolder, ...
                 subtemp.gm_prob ' ' ...
                 char(string(nsegs))];
             [status,cmdout] = system (cmd_skullStriping_FAST_2);
-            subject_log(cmdout,studyFolder,ID)
-        end
+            subject_log(cmdout,studyFolder,ID);
 
-    end
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % kNN WMH discovery Step 1: Preprocessing %
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % kNN WMH discovery Step 1: Preprocessing %
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-   
-%     cmd_kNN_step1_1 = ['chmod +x ' CNSP_path '/WMH_extraction/WMHextraction_kNNdiscovery_Step1.sh'];
-%     system (cmd_kNN_step1_1);
-
-
-    parfor i = 1:Nsubj
-        T1imgNames = strsplit (T1folder(i).name, '_');   % split T1 image name, delimiter is underscore
-        ID = T1imgNames{1};   % first section is ID
-        subtemp = copy(template);
-        if strcmp(template.name, 'native template')
-            subtemp.subID = i; % need to set the template subject if native
-        end 
-
-        if ismember(ID, excldIDs) == 0
-            subject_log('Running WMHextraction_kNNdiscovery_Step1.sh ...\n\n',studyFolder,ID)
+            subject_log('Running WMHextraction_kNNdiscovery_Step1.sh ...\n\n',studyFolder,ID);
             cmd_kNN_step1_2 = [CNSP_path '/WMH_extraction/WMHextraction/WMHextraction_kNNdiscovery_Step1.sh ' ...
                 ID ' ' ...
                 studyFolder '/subjects ' ...
@@ -210,26 +160,13 @@ function WMHextraction_woQC_cmd (studyFolder, ...
                 strrep(subtemp.name, ' ', '_') ' ' ...
                 char(string(nsegs))];
             [status,cmdout] = system (cmd_kNN_step1_2);
-            subject_log(cmdout,studyFolder,ID)
-        end
-    end
+            subject_log(cmdout,studyFolder,ID);
 
-
-
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % kNN WMH discovery Step 2: kNN calculation %
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % kNN WMH discovery Step 2: kNN calculation %
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
      
-    parfor i = 1:Nsubj
-        T1imgNames = strsplit (T1folder(i).name, '_');   % split T1 image name, delimiter is underscore
-        ID = T1imgNames{1};   % first section is ID
-        subtemp = copy(template);
-        if strcmp(template.name, 'native template')
-            subtemp.subID = i % need to set the template subject if native
-        end 
-        
-        if ismember(ID, excldIDs) == 0
-            subject_log('Running WMHextraction_kNNdiscovery_Step2 ...\n\n',studyFolder,ID)
+            subject_log('Running WMHextraction_kNNdiscovery_Step2 ...\n\n',studyFolder,ID);
             WMHextraction_kNNdiscovery_Step2 (k, ...
                                               ID, ...
                                               classifier, ...
@@ -239,28 +176,14 @@ function WMHextraction_woQC_cmd (studyFolder, ...
                                               trainingFeatures2, ...
                                               nsegs ...
                                               );
-        end
-    end
 
 
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % kNN WMH discovery Step 3: Postprocessing and cleanup %
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    probThr_str = num2str (probThr, '%1.2f');
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % kNN WMH discovery Step 3: Postprocessing and cleanup %
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            probThr_str = num2str (probThr, '%1.2f');
     
-%     cmd_kNN_step3_1 = ['chmod +x ' CNSP_path '/WMH_extraction/WMHextraction_kNNdiscovery_Step3.sh'];
-%     system (cmd_kNN_step3_1);
-
-    parfor i = 1:Nsubj
-        T1imgNames = strsplit (T1folder(i).name, '_');   % split T1 image name, delimiter is underscore
-        ID = T1imgNames{1};   % first section is ID
-        subtemp = copy(template);
-        if strcmp(template.name, 'native template')
-            subtemp.subID = i % need to set the template subject if native
-        end 
-
-        if ismember(ID, excldIDs) == 0
-            subject_log('Running WMHextraction_kNNdiscovery_Step3.sh...\n\n',studyFolder,ID)
+            subject_log('Running WMHextraction_kNNdiscovery_Step3.sh...\n\n',studyFolder,ID);
             cmd_kNN_step3_2 = [CNSP_path '/WMH_extraction/WMHextraction/WMHextraction_kNNdiscovery_Step3.sh ' ...
                         ID ' ' ...
                         studyFolder '/subjects ' ...
@@ -273,7 +196,7 @@ function WMHextraction_woQC_cmd (studyFolder, ...
                         subtemp.arterial ' ' 
                         ];
             [status,cmdout] = system (cmd_kNN_step3_2);
-            subject_log(cmdout,studyFolder,ID)
+            subject_log(cmdout,studyFolder,ID);
         end
     end
 
@@ -284,15 +207,6 @@ function WMHextraction_woQC_cmd (studyFolder, ...
     %%%%%%%%%%%%%%%%%%%%%
     
     fprintf ('3.4 Generating output ...\n');
-%     cmd_merge_WMHresults_1 = ['if [ -f ' studyFolder '/subjects/WMH_spreadsheet.txt ];then rm -f ' studyFolder '/subjects/WMH_spreadsheet.txt;fi'];
-%     system (cmd_merge_WMHresults_1);
-% 
-%     cmd_merge_WMHresults_2 = ['echo "ID,wholeBrainWMHvol_mm3,PVWMHvol_mm3,DWMHvol_mm3,Lfrontal_WMHvol_mm3,Rfrontal_WMHvol_mm3,Ltemporal_WMHvol_mm3,Rtemporal_WMHvol_mm3,Lparietal_WMHvol_mm3,Rparietal_WMHvol_mm3,Loccipital_WMHvol_mm3,Roccipital_WMHvol_mm3,Lcerebellum_WMHvol_mm3,Rcerebellum_WMHvol_mm3,Brainstem_WMHvol_mm3" >> ' ...
-%                                     studyFolder '/subjects/WMH_spreadsheet.txt'];
-%     system (cmd_merge_WMHresults_2);
-
-%     cmd_merge_WMHresults_3 = ['chmod +x ' CNSP_path '/WMH_extraction/WMHextraction_kNNdiscovery_Step4.sh'];
-%     system (cmd_merge_WMHresults_3);
 
     system ([CNSP_path '/WMH_extraction/WMHextraction/WMHspreadsheetTitle.sh ' studyFolder '/subjects']);
 
@@ -307,28 +221,14 @@ function WMHextraction_woQC_cmd (studyFolder, ...
             subject_log(cmdout,studyFolder,ID)
         end
     end                                
-
-
-
-
-    %%%%%%%%%%%%%%%%%%%%%%%%
-    %% QC_3: final output %%
-    %%%%%%%%%%%%%%%%%%%%%%%%
+    
+    fprintf ('Generating coregistration QC images ...\n');
+    WMHextraction_QC_1 (studyFolder, outputFormat); % coregistration QC
+    fprintf ('Generating segmentation QC images ...\n');
+    WMHextraction_QC_2 (studyFolder, coregExcldList, outputFormat); % segmentation QC
     fprintf ('3.5 Generating images for quality assurance of the final output ...\n');
-
-    
     WMHextraction_QC_3 (studyFolder, coregExcldList, segExcldList, outputFormat);
-    
-    % switch outputFormat
-    %     case 'web'
-    %         % display on screen
-    %     case 'arch'
-    %         fprintf ('Download link: %s/subjects/QC/QC_final/QC_final.zip\n', studyFolder);
-    %     case 'web&arch'
-    %         fprintf ('Download link: %s/subjects/QC/QC_final/QC_final.zip\n', studyFolder);
-    % end
-    
-    
+
     if ~strcmp(template.name, 'native template')
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %% Bring back to native space %%

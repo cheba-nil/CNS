@@ -7,7 +7,7 @@
 
 
 
-function WMHextraction_preprocessing_Step4 (studyFolder, template, coregExcldList, segExcldList, CNSP_path)
+function WMHextraction_preprocessing_Step4 (studyFolder, template, coregExcldList, segExcldList, CNSP_path,i)
 
     excldList = [coregExcldList ' ' segExcldList];
     excldIDs = strsplit (excldList, ' ');
@@ -22,105 +22,104 @@ function WMHextraction_preprocessing_Step4 (studyFolder, template, coregExcldLis
 
     spm('defaults', 'fmri');
 
-    parfor i = 1:Nsubj
+    T1imgNames = strsplit (T1folder(i).name, '_');   % split T1 image name, delimiter is underscore
+    T1imgFileNames = strsplit (T1folder(i).name, '.');
+    ID = T1imgNames{1};   % first section is ID
+    T1imgFileName = T1imgFileNames{1};
+    subject_log('Running WMHextraction_preprocessing_Step4 ... \n\n',studyFolder,ID)
+    subtemp = copy(template)
 
-        T1imgNames = strsplit (T1folder(i).name, '_');   % split T1 image name, delimiter is underscore
-        T1imgFileNames = strsplit (T1folder(i).name, '.');
-        ID = T1imgNames{1};   % first section is ID
-        T1imgFileName = T1imgFileNames{1};
-        subject_log('Running WMHextraction_preprocessing_Step4 ... \n\n',studyFolder,ID)
-        subtemp = copy(template)
+    if ismember(ID, excldIDs) == 0
 
-        if ismember(ID, excldIDs) == 0
+        matlabbatch = [];   % preallocate to enable parfor
+        spm_jobman('initcfg');
+        
+        % We need to do something different if we are to process in native space
+        if strcmp(template.name, 'native template')
+            % set the subtemp's ID
+            subtemp.subID = i
+            % Need to copy the flair image to preproc
+            flair=strcat(studyFolder,'/subjects/',ID,'/mri/orig/',FLAIRfolder(i).name)
+            rflair = strcat (studyFolder, '/subjects/', ID, '/mri/preprocessing/r', FLAIRfolder(i).name);
+            wflair = strcat (studyFolder, '/subjects/', ID, '/mri/preprocessing/wr', FLAIRfolder(i).name);
+            %reslice_nii(flair,wflair,[],[2])
+            copyfile(flair,wflair) % trying to avoid reslicing
 
-            matlabbatch = [];   % preallocate to enable parfor
-            spm_jobman('initcfg');
+            % Because spm is annoying, let's be lazy and temporarily move rc[1-3]
+            rc1 = strcat(studyFolder,'/subjects/',ID,'/mri/preprocessing/rc1',T1folder(i).name)
+            rc2 = strcat(studyFolder,'/subjects/',ID,'/mri/preprocessing/rc2',T1folder(i).name)
+            rc3 = strcat(studyFolder,'/subjects/',ID,'/mri/preprocessing/rc3',T1folder(i).name)
+            tc1 = strcat(studyFolder,'/subjects/',ID,'/mri/preprocessing/tc1',T1folder(i).name)
+            tc2 = strcat(studyFolder,'/subjects/',ID,'/mri/preprocessing/tc2',T1folder(i).name)
+            tc3 = strcat(studyFolder,'/subjects/',ID,'/mri/preprocessing/tc3',T1folder(i).name)
+            wc1 = strcat(studyFolder,'/subjects/',ID,'/mri/preprocessing/wc1',T1folder(i).name)
+            wc2 = strcat(studyFolder,'/subjects/',ID,'/mri/preprocessing/wc2',T1folder(i).name)
+            wc3 = strcat(studyFolder,'/subjects/',ID,'/mri/preprocessing/wc3',T1folder(i).name)
+            c1 = strcat(studyFolder,'/subjects/',ID,'/mri/preprocessing/c1',T1folder(i).name)
+            c2 = strcat(studyFolder,'/subjects/',ID,'/mri/preprocessing/c2',T1folder(i).name)
+            c3 = strcat(studyFolder,'/subjects/',ID,'/mri/preprocessing/c3',T1folder(i).name)
+            movefile(rc1,tc1)
+            movefile(rc2,tc2)
+            movefile(rc3,tc3)
+
+            % Prep a few more variable names
+            t1 = strcat(studyFolder,'/subjects/',ID,'/mri/orig/',T1folder(i).name)                
+            rt1_o = strcat(studyFolder,'/subjects/',ID,'/mri/orig/r',T1folder(i).name)                
+            rt1 = strcat(studyFolder,'/subjects/',ID,'/mri/preprocessing/r',T1folder(i).name)
+            wt1 = strcat(studyFolder,'/subjects/',ID,'/mri/preprocessing/w',T1folder(i).name)
+
+            % Perform the coregistrations to FLAIR dimensions
+            CNSP_registration(rflair,wflair,pwd,c1) 
+            CNSP_registration(rflair,wflair,pwd,c2) 
+            CNSP_registration(rflair,wflair,pwd,c3) 
+            CNSP_registration(rflair,wflair,pwd,t1) 
             
-            % We need to do something different if we are to process in native space
-            if strcmp(template.name, 'native template')
-                % set the subtemp's ID
-                subtemp.subID = i
-                % Need to copy the flair image to preproc
-                flair=strcat(studyFolder,'/subjects/',ID,'/mri/orig/',FLAIRfolder(i).name)
-                rflair = strcat (studyFolder, '/subjects/', ID, '/mri/preprocessing/r', FLAIRfolder(i).name);
-                wflair = strcat (studyFolder, '/subjects/', ID, '/mri/preprocessing/wr', FLAIRfolder(i).name);
-                %reslice_nii(flair,wflair,[],[2])
-                copyfile(flair,wflair) % trying to avoid reslicing
+            % Some cleanup for compatibility
+            movefile(rt1_o,wt1)
+            movefile(rc1,wc1)
+            movefile(rc2,wc2)
+            movefile(rc3,wc3)
+            movefile(tc1,rc1)
+            movefile(tc2,rc2)
+            movefile(tc3,rc3)
 
-                % Because spm is annoying, let's be lazy and temporarily move rc[1-3]
-                rc1 = strcat(studyFolder,'/subjects/',ID,'/mri/preprocessing/rc1',T1folder(i).name)
-                rc2 = strcat(studyFolder,'/subjects/',ID,'/mri/preprocessing/rc2',T1folder(i).name)
-                rc3 = strcat(studyFolder,'/subjects/',ID,'/mri/preprocessing/rc3',T1folder(i).name)
-                tc1 = strcat(studyFolder,'/subjects/',ID,'/mri/preprocessing/tc1',T1folder(i).name)
-                tc2 = strcat(studyFolder,'/subjects/',ID,'/mri/preprocessing/tc2',T1folder(i).name)
-                tc3 = strcat(studyFolder,'/subjects/',ID,'/mri/preprocessing/tc3',T1folder(i).name)
-                wc1 = strcat(studyFolder,'/subjects/',ID,'/mri/preprocessing/wc1',T1folder(i).name)
-                wc2 = strcat(studyFolder,'/subjects/',ID,'/mri/preprocessing/wc2',T1folder(i).name)
-                wc3 = strcat(studyFolder,'/subjects/',ID,'/mri/preprocessing/wc3',T1folder(i).name)
-                c1 = strcat(studyFolder,'/subjects/',ID,'/mri/preprocessing/c1',T1folder(i).name)
-                c2 = strcat(studyFolder,'/subjects/',ID,'/mri/preprocessing/c2',T1folder(i).name)
-                c3 = strcat(studyFolder,'/subjects/',ID,'/mri/preprocessing/c3',T1folder(i).name)
-                movefile(rc1,tc1)
-                movefile(rc2,tc2)
-                movefile(rc3,tc3)
-    
-                % Prep a few more variable names
-                t1 = strcat(studyFolder,'/subjects/',ID,'/mri/orig/',T1folder(i).name)                
-                rt1_o = strcat(studyFolder,'/subjects/',ID,'/mri/orig/r',T1folder(i).name)                
-                rt1 = strcat(studyFolder,'/subjects/',ID,'/mri/preprocessing/r',T1folder(i).name)
-                wt1 = strcat(studyFolder,'/subjects/',ID,'/mri/preprocessing/w',T1folder(i).name)
-    
-                % Perform the coregistrations to FLAIR dimensions
-                CNSP_registration(rflair,wflair,pwd,c1) 
-                CNSP_registration(rflair,wflair,pwd,c2) 
-                CNSP_registration(rflair,wflair,pwd,c3) 
-                CNSP_registration(rflair,wflair,pwd,t1) 
+        else
+            switch template.name
+                case 'existing template'
+                    flowMap = strcat (studyFolder, '/subjects/', ID, '/mri/preprocessing/u_rc1', T1folder(i).name);
                 
-                % Some cleanup for compatibility
-                movefile(rt1_o,wt1)
-                movefile(rc1,wc1)
-                movefile(rc2,wc2)
-                movefile(rc3,wc3)
-                movefile(tc1,rc1)
-                movefile(tc2,rc2)
-                movefile(tc3,rc3)
-
-            else
-                switch template.name
-                    case 'existing template'
-                        flowMap = strcat (studyFolder, '/subjects/', ID, '/mri/preprocessing/u_rc1', T1folder(i).name);
-                    
-                    case 'creating template'
-                        flowMap = [studyFolder '/subjects/' ID '/mri/preprocessing/u_rc1' T1imgFileName '_Template.nii'];
-
-                end
-
-                origT1 = strcat (studyFolder, '/subjects/', ID, '/mri/orig/', T1folder(i).name);
-                rFLAIR = strcat (studyFolder, '/subjects/', ID, '/mri/preprocessing/r', FLAIRfolder(i).name);
-                cGM = strcat (studyFolder, '/subjects/', ID, '/mri/preprocessing/c1', T1folder(i).name);
-                cWM = strcat (studyFolder, '/subjects/', ID, '/mri/preprocessing/c2', T1folder(i).name);
-                cCSF = strcat (studyFolder, '/subjects/', ID, '/mri/preprocessing/c3', T1folder(i).name);
-
-
-                matlabbatch{1}.spm.tools.dartel.crt_warped.flowfields = {flowMap};
-                matlabbatch{1}.spm.tools.dartel.crt_warped.images = {
-                                                                     {origT1}
-                                                                     {rFLAIR}
-                                                                     {cGM}
-                                                                     {cWM}
-                                                                     {cCSF}
-                                                                     }';
-                matlabbatch{1}.spm.tools.dartel.crt_warped.jactransf = 0;
-                matlabbatch{1}.spm.tools.dartel.crt_warped.K = 6;
-                matlabbatch{1}.spm.tools.dartel.crt_warped.interp = 1;
-
-                output = spm_jobman ('run',matlabbatch);
+                case 'creating template'
+                    flowMap = [studyFolder '/subjects/' ID '/mri/preprocessing/u_rc1' T1imgFileName '_Template.nii'];
 
             end
+
+            origT1 = strcat (studyFolder, '/subjects/', ID, '/mri/orig/', T1folder(i).name);
+            rFLAIR = strcat (studyFolder, '/subjects/', ID, '/mri/preprocessing/r', FLAIRfolder(i).name);
+            cGM = strcat (studyFolder, '/subjects/', ID, '/mri/preprocessing/c1', T1folder(i).name);
+            cWM = strcat (studyFolder, '/subjects/', ID, '/mri/preprocessing/c2', T1folder(i).name);
+            cCSF = strcat (studyFolder, '/subjects/', ID, '/mri/preprocessing/c3', T1folder(i).name);
+
+
+            matlabbatch{1}.spm.tools.dartel.crt_warped.flowfields = {flowMap};
+            matlabbatch{1}.spm.tools.dartel.crt_warped.images = {
+                                                                 {origT1}
+                                                                 {rFLAIR}
+                                                                 {cGM}
+                                                                 {cWM}
+                                                                 {cCSF}
+                                                                 }';
+            matlabbatch{1}.spm.tools.dartel.crt_warped.jactransf = 0;
+            matlabbatch{1}.spm.tools.dartel.crt_warped.K = 6;
+            matlabbatch{1}.spm.tools.dartel.crt_warped.interp = 1;
+
+            output = spm_jobman ('run',matlabbatch);
+
         end
     end
         
 
+%{
+    % TODO: figure out what to do here
     if strcmp (template.name,'creating template')
 
         % create studyFolder/subjects/cohort_probability_maps
@@ -194,3 +193,4 @@ function WMHextraction_preprocessing_Step4 (studyFolder, template, coregExcldLis
         system (cmd_mvTemplate_7);
         system (cmd_mvTemplate_8);
     end
+%}

@@ -12,7 +12,7 @@ function WMHextraction_preprocessing_Step3 (studyFolder, ...
                                             dartelTemplate, ...
                                             coregExcldList, ...
                                             segExcldList, ...
-                                            ageRange)
+                                            ageRange,i)
 
 
     cmd_createSegFailureFolder = ['if [ ! -d ' studyFolder '/subjects/segQCfailure ]; then mkdir ' studyFolder '/subjects/segQCfailure; fi'];
@@ -24,14 +24,14 @@ function WMHextraction_preprocessing_Step3 (studyFolder, ...
     
     switch dartelTemplate.name
         case 'existing template'
-            existingTemplateDARTELrun (studyFolder, CNSP_path, coregExcldList, segExcldList, ageRange)
+            existingTemplateDARTELrun (studyFolder, CNSP_path, coregExcldList, segExcldList, ageRange,i)
         case 'creating template'
-            creatingTemplateDARTELrun (studyFolder, coregExcldList, segExcldList);
+            creatingTemplateDARTELrun (studyFolder, coregExcldList, segExcldList,i);
         case 'native template'
-            nativeTemplateRun(dartelTemplate,coregExcldList,segExcldList) 
+            nativeTemplateRun(dartelTemplate,coregExcldList,segExcldList,i) 
     end
     
-function nativeTemplateRun(template,coregExcldList,segExcldList)
+function nativeTemplateRun(template,coregExcldList,segExcldList,i)
     T1folder = dir (strcat (template.studyFolder,'/originalImg/T1/*.nii'));
     [Nsubj,n] = size (T1folder);
 
@@ -41,36 +41,29 @@ function nativeTemplateRun(template,coregExcldList,segExcldList)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     dtemplate = DartelTemplate(template.CNS_path, template.age_range, template.studyFolder);
     WMHextraction_preprocessing_Step3(template.studyFolder,template.CNS_path, ...
-                                      dtemplate,coregExcldList,segExcldList,template.age_range);
+                                      dtemplate,coregExcldList,segExcldList,template.age_range,i);
 
     excldList = [coregExcldList ' ' segExcldList];
     excldIDs = strsplit (excldList, ' ');
 
-    class_array = NativeTemplate.empty(1,0)
-    for i = 1:Nsubj
-        class_array(i) = copy(template);
-    end
-    
     % generate a template foreach subject
-    parfor i = 1:Nsubj
 
-        subtemp = class_array(i);  % get copy to make this parfor friendly
-        subtemp.subID = i; % set the subject ID
+    subtemp = copy(template);  % get copy to make this parfor friendly
+    subtemp.subID = i; % set the subject ID
 
-        T1imgNames = strsplit (T1folder(i).name, '_');   % split T1 image name, delimiter is underscore
-        ID = T1imgNames{1};   % first section is ID
-        subject_log('Running WMHextraction_preprocessing_Step3 (Native Template) ... \n\n',template.studyFolder,ID)
+    T1imgNames = strsplit (T1folder(i).name, '_');   % split T1 image name, delimiter is underscore
+    ID = T1imgNames{1};   % first section is ID
+    subject_log('Running WMHextraction_preprocessing_Step3 (Native Template) ... \n\n',template.studyFolder,ID)
 
-        if ismember(ID, excldIDs) == 0
-            subtemp.generate();
-        end
+    if ismember(ID, excldIDs) == 0
+        subtemp.generate();
     end
 
 
     
     
  %% existing template DARTEL run
-function existingTemplateDARTELrun (studyFolder, CNSP_path, coregExcldList, segExcldList, ageRange)
+function existingTemplateDARTELrun (studyFolder, CNSP_path, coregExcldList, segExcldList, ageRange,i)
     
     
     T1folder = dir (strcat (studyFolder,'/originalImg/T1/*.nii'));
@@ -103,69 +96,64 @@ function existingTemplateDARTELrun (studyFolder, CNSP_path, coregExcldList, segE
                             '/Template_6.nii'];
  
 
+    T1imgNames = strsplit (T1folder(i).name, '_');   % split T1 image name, delimiter is underscore
+    ID = T1imgNames{1};   % first section is ID
+    subject_log('Running WMHextraction_preprocessing_Step3 (Existing Template) ... \n\n',studyFolder,ID)
 
-    parfor i = 1:Nsubj
+    if ismember(ID, excldIDs) == 0
 
-        T1imgNames = strsplit (T1folder(i).name, '_');   % split T1 image name, delimiter is underscore
-        ID = T1imgNames{1};   % first section is ID
-        subject_log('Running WMHextraction_preprocessing_Step3 (Existing Template) ... \n\n',studyFolder,ID)
+        matlabbatch = [];   % preallocate to enable parfor
+        spm_jobman('initcfg');
 
-        if ismember(ID, excldIDs) == 0
-
-            matlabbatch = [];   % preallocate to enable parfor
-            spm_jobman('initcfg');
-
-            rcimage1 = strcat (studyFolder, '/subjects/', ID, '/mri/preprocessing/rc1', T1folder(i).name, ',1');
-            rcimage2 = strcat (studyFolder, '/subjects/', ID, '/mri/preprocessing/rc2', T1folder(i).name, ',1');
-            rcimage3 = strcat (studyFolder, '/subjects/', ID, '/mri/preprocessing/rc3', T1folder(i).name, ',1');
+        rcimage1 = strcat (studyFolder, '/subjects/', ID, '/mri/preprocessing/rc1', T1folder(i).name, ',1');
+        rcimage2 = strcat (studyFolder, '/subjects/', ID, '/mri/preprocessing/rc2', T1folder(i).name, ',1');
+        rcimage3 = strcat (studyFolder, '/subjects/', ID, '/mri/preprocessing/rc3', T1folder(i).name, ',1');
 
 
-            matlabbatch{1}.spm.tools.dartel.warp1.images = {
-                                                    {rcimage1}
-                                                    {rcimage2}
-                                                    {rcimage3}
-                                                    }';
-            matlabbatch{1}.spm.tools.dartel.warp1.settings.rform = 0;
-            matlabbatch{1}.spm.tools.dartel.warp1.settings.param(1).its = 3;
-            matlabbatch{1}.spm.tools.dartel.warp1.settings.param(1).rparam = [4 2 1e-06];
-            matlabbatch{1}.spm.tools.dartel.warp1.settings.param(1).K = 0;
-            matlabbatch{1}.spm.tools.dartel.warp1.settings.param(1).template = {template1};
-            matlabbatch{1}.spm.tools.dartel.warp1.settings.param(2).its = 3;
-            matlabbatch{1}.spm.tools.dartel.warp1.settings.param(2).rparam = [2 1 1e-06];
-            matlabbatch{1}.spm.tools.dartel.warp1.settings.param(2).K = 0;
-            matlabbatch{1}.spm.tools.dartel.warp1.settings.param(2).template = {template2};
-            matlabbatch{1}.spm.tools.dartel.warp1.settings.param(3).its = 3;
-            matlabbatch{1}.spm.tools.dartel.warp1.settings.param(3).rparam = [1 0.5 1e-06];
-            matlabbatch{1}.spm.tools.dartel.warp1.settings.param(3).K = 1;
-            matlabbatch{1}.spm.tools.dartel.warp1.settings.param(3).template = {template3};
-            matlabbatch{1}.spm.tools.dartel.warp1.settings.param(4).its = 3;
-            matlabbatch{1}.spm.tools.dartel.warp1.settings.param(4).rparam = [0.5 0.25 1e-06];
-            matlabbatch{1}.spm.tools.dartel.warp1.settings.param(4).K = 2;
-            matlabbatch{1}.spm.tools.dartel.warp1.settings.param(4).template = {template4};
-            matlabbatch{1}.spm.tools.dartel.warp1.settings.param(5).its = 3;
-            matlabbatch{1}.spm.tools.dartel.warp1.settings.param(5).rparam = [0.25 0.125 1e-06];
-            matlabbatch{1}.spm.tools.dartel.warp1.settings.param(5).K = 4;
-            matlabbatch{1}.spm.tools.dartel.warp1.settings.param(5).template = {template5};
-            matlabbatch{1}.spm.tools.dartel.warp1.settings.param(6).its = 3;
-            matlabbatch{1}.spm.tools.dartel.warp1.settings.param(6).rparam = [0.25 0.125 1e-06];
-            matlabbatch{1}.spm.tools.dartel.warp1.settings.param(6).K = 6;
-            matlabbatch{1}.spm.tools.dartel.warp1.settings.param(6).template = {template6};
-            matlabbatch{1}.spm.tools.dartel.warp1.settings.optim.lmreg = 0.01;
-            matlabbatch{1}.spm.tools.dartel.warp1.settings.optim.cyc = 3;
-            matlabbatch{1}.spm.tools.dartel.warp1.settings.optim.its = 3;
+        matlabbatch{1}.spm.tools.dartel.warp1.images = {
+                                                {rcimage1}
+                                                {rcimage2}
+                                                {rcimage3}
+                                                }';
+        matlabbatch{1}.spm.tools.dartel.warp1.settings.rform = 0;
+        matlabbatch{1}.spm.tools.dartel.warp1.settings.param(1).its = 3;
+        matlabbatch{1}.spm.tools.dartel.warp1.settings.param(1).rparam = [4 2 1e-06];
+        matlabbatch{1}.spm.tools.dartel.warp1.settings.param(1).K = 0;
+        matlabbatch{1}.spm.tools.dartel.warp1.settings.param(1).template = {template1};
+        matlabbatch{1}.spm.tools.dartel.warp1.settings.param(2).its = 3;
+        matlabbatch{1}.spm.tools.dartel.warp1.settings.param(2).rparam = [2 1 1e-06];
+        matlabbatch{1}.spm.tools.dartel.warp1.settings.param(2).K = 0;
+        matlabbatch{1}.spm.tools.dartel.warp1.settings.param(2).template = {template2};
+        matlabbatch{1}.spm.tools.dartel.warp1.settings.param(3).its = 3;
+        matlabbatch{1}.spm.tools.dartel.warp1.settings.param(3).rparam = [1 0.5 1e-06];
+        matlabbatch{1}.spm.tools.dartel.warp1.settings.param(3).K = 1;
+        matlabbatch{1}.spm.tools.dartel.warp1.settings.param(3).template = {template3};
+        matlabbatch{1}.spm.tools.dartel.warp1.settings.param(4).its = 3;
+        matlabbatch{1}.spm.tools.dartel.warp1.settings.param(4).rparam = [0.5 0.25 1e-06];
+        matlabbatch{1}.spm.tools.dartel.warp1.settings.param(4).K = 2;
+        matlabbatch{1}.spm.tools.dartel.warp1.settings.param(4).template = {template4};
+        matlabbatch{1}.spm.tools.dartel.warp1.settings.param(5).its = 3;
+        matlabbatch{1}.spm.tools.dartel.warp1.settings.param(5).rparam = [0.25 0.125 1e-06];
+        matlabbatch{1}.spm.tools.dartel.warp1.settings.param(5).K = 4;
+        matlabbatch{1}.spm.tools.dartel.warp1.settings.param(5).template = {template5};
+        matlabbatch{1}.spm.tools.dartel.warp1.settings.param(6).its = 3;
+        matlabbatch{1}.spm.tools.dartel.warp1.settings.param(6).rparam = [0.25 0.125 1e-06];
+        matlabbatch{1}.spm.tools.dartel.warp1.settings.param(6).K = 6;
+        matlabbatch{1}.spm.tools.dartel.warp1.settings.param(6).template = {template6};
+        matlabbatch{1}.spm.tools.dartel.warp1.settings.optim.lmreg = 0.01;
+        matlabbatch{1}.spm.tools.dartel.warp1.settings.optim.cyc = 3;
+        matlabbatch{1}.spm.tools.dartel.warp1.settings.optim.its = 3;
 
-            output = spm_jobman ('run',matlabbatch);
+        output = spm_jobman ('run',matlabbatch);
 
-        elseif ismember(ID, segExcldIDs) == 1
-            movefile (strcat (studyFolder, '/subjects/', ID), strcat (studyFolder, '/subjects/segQCfailure'));
-
-        end
+    elseif ismember(ID, segExcldIDs) == 1
+        movefile (strcat (studyFolder, '/subjects/', ID), strcat (studyFolder, '/subjects/segQCfailure'));
 
     end
-    
+
     
     %% creating template
-function creatingTemplateDARTELrun (studyFolder, coregExcldList, segExcldList)
+function creatingTemplateDARTELrun (studyFolder, coregExcldList, segExcldList,i)
 
     rcCellArray = cell(3,1);
 
@@ -183,21 +171,17 @@ function creatingTemplateDARTELrun (studyFolder, coregExcldList, segExcldList)
     cmd_createSegFailureFolder = ['if [ ! -d ' studyFolder '/subjects/segQCfailure ]; then mkdir ' studyFolder '/subjects/segQCfailure; fi'];
     system (cmd_createSegFailureFolder);
 
-    for i = 1:Nsubj
 
-        T1imgNames = strsplit (T1folder(i).name, '_');   % split T1 image name, delimiter is underscore
-        ID = T1imgNames{1};   % first section is ID
+    T1imgNames = strsplit (T1folder(i).name, '_');   % split T1 image name, delimiter is underscore
+    ID = T1imgNames{1};   % first section is ID
 
-        if ismember(ID, excldIDs) == 0
-            rcCellArray{1}{end+1,1} = [studyFolder '/subjects/' ID '/mri/preprocessing/rc1' T1folder(i).name ',1'];
-            rcCellArray{2}{end+1,1} = [studyFolder '/subjects/' ID '/mri/preprocessing/rc2' T1folder(i).name ',1'];
-            rcCellArray{3}{end+1,1} = [studyFolder '/subjects/' ID '/mri/preprocessing/rc3' T1folder(i).name ',1'];
-        elseif ismember (ID, segExcldIDs) ==1
-            movefile (strcat (studyFolder, '/subjects/', ID), strcat (studyFolder, '/subjects/segQCfailure'));
-        end
+    if ismember(ID, excldIDs) == 0
+        rcCellArray{1}{end+1,1} = [studyFolder '/subjects/' ID '/mri/preprocessing/rc1' T1folder(i).name ',1'];
+        rcCellArray{2}{end+1,1} = [studyFolder '/subjects/' ID '/mri/preprocessing/rc2' T1folder(i).name ',1'];
+        rcCellArray{3}{end+1,1} = [studyFolder '/subjects/' ID '/mri/preprocessing/rc3' T1folder(i).name ',1'];
+    elseif ismember (ID, segExcldIDs) ==1
+        movefile (strcat (studyFolder, '/subjects/', ID), strcat (studyFolder, '/subjects/segQCfailure'));
     end
-
-
 
     matlabbatch{1}.spm.tools.dartel.warp.images = rcCellArray;
 %%
