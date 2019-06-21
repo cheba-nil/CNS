@@ -91,7 +91,7 @@ function WMHextraction_woQC_cmd (studyFolder, ...
         %%%%%%%%%%%%%%%%%
         % Run SPM steps %
         %%%%%%%%%%%%%%%%%
-        fprintf ('WMH extraction step 1: T1 & FLAIR coregistration ...\n');
+        subject_log('WMH extraction step 1: T1 & FLAIR coregistration ...\n',studyFolder,ID);
         WMHextraction_preprocessing_Step1 (studyFolder,i); % Step 1: coregistration
         
         %fprintf ('Generating coregistration QC images ...\n');
@@ -99,16 +99,16 @@ function WMHextraction_woQC_cmd (studyFolder, ...
         %WMHextraction_QC_1 (studyFolder, outputFormat); % coregistration QC
         
 
-        fprintf ('WMH extraction step 2: T1 segmentation ...\n');
+        subject_log ('WMH extraction step 2: T1 segmentation ...\n',studyFolder,ID);
         WMHextraction_preprocessing_Step2 (studyFolder, spm12path, coregExcldList,i); % Step 2: segmentation
       
         %fprintf ('Generating segmentation QC images ...\n');
         % TODO: figure out what to do here
         %WMHextraction_QC_2 (studyFolder, coregExcldList, outputFormat); % segmentation QC
         
-        fprintf ('WMH extraction step 3: Running DARTEL ...\n');
+        subject_log ('WMH extraction step 3: Running DARTEL ...\n',studyFolder,ID);
         
-        fprintf ('3.1 Running DARTEL ...\n');
+        subject_log ('3.1 Running DARTEL ...\n',studyFolder,ID);
         WMHextraction_preprocessing_Step3 (studyFolder, ...
                                             CNSP_path, ...
                                             template, ...
@@ -117,17 +117,15 @@ function WMHextraction_woQC_cmd (studyFolder, ...
                                             ageRange,...
                                             i); 
 
-        fprintf ('3.2: Bring to DARTEL ...\n');
+        subject_log ('3.2: Bring to DARTEL ...\n',studyFolder,ID);
         WMHextraction_preprocessing_Step4 (studyFolder, template, coregExcldList, segExcldList, CNSP_path,i); % Step 4: bring to DARTEL
 
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % non-brain tissue removal & FSL FAST %
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         
-        fprintf ('3.3 WMH extraction using kNN ...\n');
+        subject_log ('3.3 WMH extraction using kNN ...\n',studyFolder,ID);
     
-        T1imgNames = strsplit (T1folder(i).name, '_');   % split T1 image name, delimiter is underscore
-        ID = T1imgNames{1};   % first section is ID
 
         if ismember(ID, excldIDs) == 0
             subtemp = copy(template);
@@ -206,15 +204,13 @@ function WMHextraction_woQC_cmd (studyFolder, ...
     % Generating output %
     %%%%%%%%%%%%%%%%%%%%%
     
-    fprintf ('3.4 Generating output ...\n');
 
     system ([CNSP_path '/WMH_extraction/WMHextraction/WMHspreadsheetTitle.sh ' studyFolder '/subjects']);
 
     for i = 1:Nsubj
-        T1imgNames = strsplit (T1folder(i).name, '_');   % split T1 image name, delimiter is underscore
-        ID = T1imgNames{1};   % first section is ID
 
         if ismember(ID, excldIDs) == 0
+            subject_log ('3.4 Generating output ...\n',studyFolder,ID);
             subject_log('Running WMHextraction_kNNdiscovery_Step4.sh ...\n\n',studyFolder,ID)
             cmd_merge_WMHresults_4 = [CNSP_path '/WMH_extraction/WMHextraction/WMHextraction_kNNdiscovery_Step4.sh ' ID ' ' studyFolder '/subjects'];
             [status,cmdout] = system (cmd_merge_WMHresults_4);
@@ -233,14 +229,12 @@ function WMHextraction_woQC_cmd (studyFolder, ...
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %% Bring back to native space %%
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        fprintf ('3.6 Bringing DARTEL space WMH mask to native space ...\n');
 
 
         parfor i = 1:Nsubj
-            T1imgNames = strsplit (T1folder(i).name, '_');   % split T1 image name, delimiter is underscore
-            ID = T1imgNames{1};   % first section is ID
             
             if ismember(ID, excldIDs) == 0
+                subject_log ('3.6 Bringing DARTEL space WMH mask to native space ...\n',studyFolder,ID);
                 switch template.name
                 case 'existing template'
                     WMHresultsBack2NativeSpace (studyFolder, ID, spm12path);
@@ -258,8 +252,6 @@ function WMHextraction_woQC_cmd (studyFolder, ...
         indWMH_FLAIRspace_cellArr = cell (Nsubj, 1);
 
         for i = 1:Nsubj
-            T1imgNames = strsplit (T1folder(i).name, '_');   % split T1 image name, delimiter is underscore
-            ID = T1imgNames{1};   % first section is ID
             
             if ismember (ID, excldIDs) == 0
                 indFLAIR_cellArr{i,1} = strcat (studyFolder,'/originalImg/FLAIR/', FLAIRfolder(i).name);
