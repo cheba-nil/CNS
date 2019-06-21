@@ -249,7 +249,7 @@ function WMHextraction_woQC_cmd (studyFolder, ...
             % Skip excluded and failed subjects
             if ismember(ID, excldIDs) == 0 && ~isFile(strcat(studyFolder,'/',subjects,'/',ID,'/failed.txt'))
 
-                try:
+                try
                     subject_log ('3.6 Bringing DARTEL space WMH mask to native space ...\n',studyFolder,ID);
                     switch template.name
                     case 'existing template'
