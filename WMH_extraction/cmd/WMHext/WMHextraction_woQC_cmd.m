@@ -94,18 +94,9 @@ function WMHextraction_woQC_cmd (studyFolder, ...
         subject_log('WMH extraction step 1: T1 & FLAIR coregistration ...\n',studyFolder,ID);
         WMHextraction_preprocessing_Step1 (studyFolder,i); % Step 1: coregistration
         
-        %fprintf ('Generating coregistration QC images ...\n');
-        % TODO: figure out what to do here
-        %WMHextraction_QC_1 (studyFolder, outputFormat); % coregistration QC
-        
-
         subject_log ('WMH extraction step 2: T1 segmentation ...\n',studyFolder,ID);
         WMHextraction_preprocessing_Step2 (studyFolder, spm12path, coregExcldList,i); % Step 2: segmentation
       
-        %fprintf ('Generating segmentation QC images ...\n');
-        % TODO: figure out what to do here
-        %WMHextraction_QC_2 (studyFolder, coregExcldList, outputFormat); % segmentation QC
-        
         subject_log ('WMH extraction step 3: Running DARTEL ...\n',studyFolder,ID);
         
         subject_log ('3.1 Running DARTEL ...\n',studyFolder,ID);
