@@ -79,12 +79,13 @@ function WMHextraction_woQC_cmd (studyFolder, ...
     spm('defaults', 'fmri');
     spm_jobman('initcfg');
     
-    % gunzip niftis
     parfor i = 1:Nsubj
+%    for i = 1:Nsubj
         T1imgNames = strsplit (T1folder(i).name, '_');   % split T1 image name, delimiter is underscore
         ID = T1imgNames{1};   % first section is ID
 
         try
+            % gunzip niftis
             mkdir (strcat(studyFolder,'/subjects/',ID,'/mri'),'orig');  % create orig folder under each subject folder
             subject_log('Unzipping images ...\n',studyFolder,ID);
             CNSP_gunzipnii ([studyFolder '/originalImg/T1/' T1folder(i).name]);
@@ -196,11 +197,13 @@ function WMHextraction_woQC_cmd (studyFolder, ...
             end
         catch ME
             subject_log('SUBJECT FAILED\n',studyFolder,ID);
-            subject_log(ME.identifier,studyfolder,ID);
-            subject_log(ME.message,studyfolder,ID);
-            warning(strcat([str(ID),' failed -- ',ME.message]));
+            subject_log(ME.identifier,studyFolder,ID);
+            subject_log(ME.message,studyFolder,ID);
+            subject_log(getReport(ME,'extended'),studyFolder,ID);
+            disp(strcat([string(ID),' failed -- ',ME.message]));
+            disp(getReport(ME,'extended'));
             % Touch a file to indicate that this subject has failed
-            system(strcat('touch ',studyFolder,'/',subjects,'/',ID,'/failed.txt'))
+            system(['touch ',studyFolder,'/subjects/',char(string(ID)),'/failed.txt'])
         end
     end
 
@@ -217,7 +220,7 @@ function WMHextraction_woQC_cmd (studyFolder, ...
         T1imgNames = strsplit (T1folder(i).name, '_');   % split T1 image name, delimiter is underscore
         ID = T1imgNames{1};   % first section is ID
         % Skip excluded and failed subjects
-        if ismember(ID, excldIDs) == 0 && ~isFile(strcat(studyFolder,'/',subjects,'/',ID,'/failed.txt'))
+        if ismember(ID, excldIDs) == 0 && ~isfile(strcat(studyFolder,'/subjects/',string(ID),'/failed.txt'))
             try
                 subject_log ('3.4 Generating output ...\n',studyFolder,ID);
                 subject_log('Running WMHextraction_kNNdiscovery_Step4.sh ...\n\n',studyFolder,ID)
@@ -226,11 +229,12 @@ function WMHextraction_woQC_cmd (studyFolder, ...
                 subject_log(cmdout,studyFolder,ID)
             catch ME
                 subject_log('SUBJECT FAILED\n',studyFolder,ID);
-                subject_log(ME.identifier,studyfolder,ID);
+                subject_log(ME.identifier,studyFolder,ID);
                 subject_log(ME.message,studyFolder,ID);
-                warning(strcat([str(ID),' failed -- ',ME.message]));
+                disp(strcat([string(ID),' failed -- ',ME.message]));
+                disp(getReport(ME,'extended'));
                 % Touch a file to indicate that this subject has failed
-                system(strcat('touch ',studyFolder,'/',subjects,'/',ID,'/failed.txt'))
+                system(['touch ',studyFolder,'/subjects/',char(string(ID)),'/failed.txt'])
             end
         end
     end                                
@@ -253,7 +257,7 @@ function WMHextraction_woQC_cmd (studyFolder, ...
             ID = T1imgNames{1};   % first section is ID
             
             % Skip excluded and failed subjects
-            if ismember(ID, excldIDs) == 0 && ~isFile(strcat(studyFolder,'/',subjects,'/',ID,'/failed.txt'))
+            if ismember(ID, excldIDs) == 0 && ~isfile(strcat(studyFolder,'/subjects/',string(ID),'/failed.txt'))
 
                 try
                     subject_log ('3.6 Bringing DARTEL space WMH mask to native space ...\n',studyFolder,ID);
@@ -266,10 +270,11 @@ function WMHextraction_woQC_cmd (studyFolder, ...
                 catch ME
                     subject_log('SUBJECT FAILED\n',studyFolder,ID);
                     subject_log(ME.message,studyFolder,ID);
-                    subject_log(ME.identifier,studyfolder,ID);
-                    warning(strcat([str(ID),' failed -- ',ME.message]));
+                    subject_log(ME.identifier,studyFolder,ID);
+                    disp(strcat([string(ID),' failed -- ',ME.message]));
+                    disp(getReport(ME,'extended'));
                     % Touch a file to indicate that this subject has failed
-                    system(strcat('touch ',studyFolder,'/',subjects,'/',ID,'/failed.txt'))
+                    system(['touch ',studyFolder,'/subjects/',char(string(ID)),'/failed.txt'])
                 end
             end
         end
@@ -284,7 +289,7 @@ function WMHextraction_woQC_cmd (studyFolder, ...
         for i = 1:Nsubj
             
             % Skip excluded and failed subjects
-            if ismember (ID, excldIDs) == 0 && ~isFile(strcat(studyFolder,'/',subjects,'/',ID,'/failed.txt'))
+            if ismember (ID, excldIDs) == 0 && ~isfile(strcat(studyFolder,'/subjects/',string(ID),'/failed.txt'))
 
                 indFLAIR_cellArr{i,1} = strcat (studyFolder,'/originalImg/FLAIR/', FLAIRfolder(i).name);
                 

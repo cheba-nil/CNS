@@ -16,6 +16,7 @@ function WMHextraction_preprocessing_Step1 (studyFolder,i)
     subject_log('Running WMHextraction_preprocessing_Step1 ... \n\n',studyFolder,ID)    
 
     matlabbatch = [];   % preallocate to enable parfor
+    spm_jobman('initcfg')
 
     refImg = strcat (studyFolder, '/subjects/', ID, '/mri/orig/', T1folder(i).name, ',1');
     srcImg = strcat (studyFolder, '/subjects/', ID, '/mri/orig/', FLAIRfolder(i).name, ',1');
