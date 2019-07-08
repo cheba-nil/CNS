@@ -92,8 +92,8 @@ function WMHextraction_woQC_cmd (studyFolder, ...
             CNSP_gunzipnii ([studyFolder '/originalImg/FLAIR/' FLAIRfolder(i).name]);
 
             mkdir (strcat(studyFolder,'/subjects/',ID,'/mri'),'orig');  % create orig folder under each subject folder
-            copyfile (strcat (studyFolder,'/originalImg/T1/', T1folder(i).name), strcat(studyFolder,'/subjects/',ID,'/mri/orig/'));        % copy T1 to each subject folder
-            copyfile (strcat (studyFolder,'/originalImg/FLAIR/', FLAIRfolder(i).name), strcat(studyFolder,'/subjects/',ID,'/mri/orig/'));  % copy FLAIR to each subject folder
+            copyfile (strcat (studyFolder,'/originalImg/T1/', ID, '_T1.nii'), strcat(studyFolder,'/subjects/',ID,'/mri/orig/'));        % copy T1 to each subject folder
+            copyfile (strcat (studyFolder,'/originalImg/FLAIR/', ID, '_FLAIR.nii'), strcat(studyFolder,'/subjects/',ID,'/mri/orig/'));  % copy FLAIR to each subject folder
 
         
             %%%%%%%%%%%%%%%%%
