@@ -92,8 +92,9 @@ function WMHextraction_woQC_cmd (studyFolder, ...
             CNSP_gunzipnii ([studyFolder '/originalImg/FLAIR/' FLAIRfolder(i).name]);
 
             mkdir (strcat(studyFolder,'/subjects/',ID,'/mri'),'orig');  % create orig folder under each subject folder
-            copyfile (strcat (studyFolder,'/originalImg/T1/', T1folder(i).name), strcat(studyFolder,'/subjects/',ID,'/mri/orig/'));        % copy T1 to each subject folder
-            copyfile (strcat (studyFolder,'/originalImg/FLAIR/', FLAIRfolder(i).name), strcat(studyFolder,'/subjects/',ID,'/mri/orig/'));  % copy FLAIR to each subject folder
+            copyfile (strcat (studyFolder,'/originalImg/T1/', regexprep(T1folder(i).name,'\.gz$','')), ... 
+                    strcat(studyFolder,'/subjects/',ID,'/mri/orig/'));        % copy T1 to each subject folder
+            copyfile (strcat (studyFolder,'/originalImg/FLAIR/', regexprep(FLAIRfolder(i).name,'.gz$','')), strcat(studyFolder,'/subjects/',ID,'/mri/orig/'));  % copy FLAIR to each subject folder
 
         
             %%%%%%%%%%%%%%%%%
@@ -134,8 +135,8 @@ function WMHextraction_woQC_cmd (studyFolder, ...
                 subject_log('Running WMHextraction_SkullStriping_and_FAST ...\n\n',studyFolder,ID);
 
                 cmd_skullStriping_FAST_2 = [CNSP_path '/WMH_extraction/WMHextraction/WMHextraction_SkullStriping_and_FAST.sh ' ...
-                    T1folder(i).name ' '...
-                    FLAIRfolder(i).name ' ' ...
+                    regexprep(T1folder(i).name,'\.gz$','') ' '...
+                    regexprep(FLAIRfolder(i).name,'\.gz$','') ' ' ...
                     studyFolder '/subjects ' ...
                     ID ' ' ...
                     subtemp.brain_mask ' ' ...
@@ -291,14 +292,14 @@ function WMHextraction_woQC_cmd (studyFolder, ...
             % Skip excluded and failed subjects
             if ismember (ID, excldIDs) == 0 && ~isfile(strcat(studyFolder,'/subjects/',string(ID),'/failed.txt'))
 
-                indFLAIR_cellArr{i,1} = strcat (studyFolder,'/originalImg/FLAIR/', FLAIRfolder(i).name);
+                indFLAIR_cellArr{i,1} = strcat (studyFolder,'/originalImg/FLAIR/', regexpr(FLAIRfolder(i).name,'\.gz$',''));
                 
                 indWMH_FLAIRspace_cellArr{i,1} = [studyFolder '/subjects/' ID '/mri/extractedWMH/' ID '_WMH_FLAIRspace.nii.gz'];
                 
             else % if ID is excluded, display the FLAIR image twice
-                indFLAIR_cellArr{i,1} = strcat (studyFolder,'/originalImg/FLAIR/', FLAIRfolder(i).name);
+                indFLAIR_cellArr{i,1} = strcat (studyFolder,'/originalImg/FLAIR/', regexpr(FLAIRfolder(i).name,'\.gz$',''));
                 
-                indWMH_FLAIRspace_cellArr{i,1} = strcat (studyFolder,'/originalImg/FLAIR/', FLAIRfolder(i).name);
+                indWMH_FLAIRspace_cellArr{i,1} = strcat (studyFolder,'/originalImg/FLAIR/', regexpr(FLAIRfolder(i).name,'\.gz$',''));
             end
         end
 
