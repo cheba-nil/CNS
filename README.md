@@ -1,5 +1,10 @@
 CHeBA Neuroimaging Software!
 ===============================
+
+Documentation
+-------------
+https://cns.readthedocs.io/en/latest/index.html
+
 UBO Detector
 ------------
 
