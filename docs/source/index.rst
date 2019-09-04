@@ -40,7 +40,7 @@ If you use TOPMAL, please cite:
    :glob:
    :caption: Contents:
 
-   install/install
+   quickstart/quickstart
 
 
 Indices and tables
