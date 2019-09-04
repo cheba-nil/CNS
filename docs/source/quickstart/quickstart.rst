@@ -56,10 +56,15 @@ Image Output
 Image output of **whole brain** WMH is located at: `/<study_folder>/subjects/<subject_ID>/mri/extractedWMH/<ID>_WMH.nii.gz`
 
 Image output of **regional** WMH is at:
+
 *Periventricular WMH:* `/<study_folder>/subjects/<subject_ID>/mri/extractedWMH/<ID>_ PVWMH.nii.gz`
+
 *Deep WMH:* `/<study_folder>/subjects/<subject_ID>/mri/extractedWMH/<ID>_DWMH.nii.gz`
+
 *Lobar WMH:* `/<study_folder>/subjects/<subject_ID>/mri/extractedWMH/lobarWMH/<ID>_*_WMH.nii.gz`
+
 *Arterial territories WMH:* `/<study_folder>/subjects/<subject_ID>/mri/extractedWMH/arterialWMH/<ID>_*_WMH.nii.gz`
+
 *Abbreviation of arterial territories:* A.A.H., anterior artery hemisphere; A.A.C., anterior artery callosal; A.A.M.L., anterior artery medial lenticulostriate; M.A.H., middle artery hemisphere; M.A.L.L., middle artery lateral lenticulostriate; P.A.H., posterior artery hemisphere; P.A.C., posterior artery callosal; P.A.T.M.P., posterior artery thalamic and midbrain perforators.
 
 Text File Output
@@ -68,7 +73,12 @@ Text File Output
 In addition to WMH volumes, UBO Detector also counts total number of WMH incidences (NoI), i.e. number of 26-connection clusters, as well as the number of punctuate (< 10.125 mm3, i.e. 3 voxels on DARTEL space), focal (< 30.375 mm3, i.e. 9 voxels on DARTEL space), medium (< 50.625 mm3, i.e. 15 voxels on DARTEL space), and confluent (> 50.625 mm3) incidences. Both volumes and NoI of the whole brain, as well as periventricular, deep, lobar, and arterial regions, are summarized.
 
 **Individual** WMH estimation can be found at:
+
 `/<study_folder>/subjects/<subject_ID>/stats/<ID>_WMH_vol.txt`
+
 `/<study_folder>/subjects/<subject_ID>/stats/<ID>_WMH_NoI.txt`
 
 WMH summary of the whole study is at: `/<study_folder>/subjects/WMH_spreadsheet.txt`
+
+**For more information, bug reporting and suggestions please contact:** cns.cheba@unsw.edu.au
+

@@ -188,11 +188,12 @@ epub_exclude_files = ['search.html']
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = True
 
+html_logo = 'logo.png'
 html_theme = "sphinx_rtd_theme"
 html_theme_options = {
     'canonical_url': '',
     'analytics_id': 'UA-139625346-1',  #  Provided by Google in your dashboard
-    'logo_only': False,
+    'logo_only': True,
     'display_version': False,
     'prev_next_buttons_location': 'bottom',
     'style_external_links': False,
