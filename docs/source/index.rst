@@ -34,12 +34,14 @@ If you use TOPMAL, please cite:
 
 *Jiang, J., Paradise, M., Liu, T., Armstrong, N. J., Zhu, W., Kochan, N. A., Brodaty, H., Sachdev, P. S., Wen, W. The association of regional white matter lesions with cognition in a community-based cohort of older individuals, NeuroImage: Clinical 19:14-21, doi.org/10.1016/j.nicl.2018.03.035 (2018).*
 
+
 .. toctree::
    :hidden:
    :maxdepth: 2
    :glob:
    :caption: Contents:
 
+   manual/quickstart.rst
    manual/*
 
 
