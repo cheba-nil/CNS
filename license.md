@@ -1,0 +1,11 @@
+1. *Ownership:* All intellectual property rights (including copyright) inand tothe Pipeline are owned by the University of New South Wales(“University”).
+
+2. *Licence:* You may download, access and use the Pipeline for non-commercial research or non-commercial educational purposes. You must not distribute copies of the Pipeline to any other person. 
+
+3. *Pipeline is provided on an ‘as is’ basis and disclaimer:* You acknowledge that your download, access and use of the Pipeline is at your own risk and the University makes the Pipeline available on an ‘as is’ and ‘as available’ basis. To the extent permitted by law,the University makes no representations, warrantiesor conditions of any kind concerning the Pipeline, express, implied, statutory or otherwise. This includes without limitation, any representations, warranties or conditions regarding: a)the content or accuracy;b)merchantability or fitness for a particular purpose;c)non-infringement;d)the absence of latent or other defects; ore)the presence or absence of errors, whether or not discoverable,of the Pipeline or any output generated from your use of the Pipeline. 
+
+4. *Updates:* You acknowledge that the University may make changes to the functionality of, and release updates to,the Pipeline from time to time. 
+
+5. *Liability:* To the extent permitted by law, the University excludes all liability to you for any loss, damage, cost or expense you suffer,or incur,in connection with your download, access or use of the Pipeline,and your use of any output directly generated from your use of the Pipeline.You agree to indemnify the University and its personnel for any loss or damage suffered or incurred by them in connection with your use of the Pipeline and your use of any output directly generated from your use of the Pipeline. 
+
+6. *Third party software:* You acknowledge that use of the Pipeline is dependent on, and requires that you have various third party software (which are subject to their own individual licences agreements which you are advised to review) installed. The University does not own any of those third party software packages and makes no representations or warranties of any kind concerning, nor does the University in any way endorse, that third party software.
