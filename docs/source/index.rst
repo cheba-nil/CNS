@@ -40,7 +40,8 @@ If you use TOPMAL, please cite:
    :glob:
    :caption: Contents:
 
-   quickstart/quickstart
+   manual/*
+
 
 
 Indices and tables
