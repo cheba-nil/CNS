@@ -134,25 +134,40 @@ else
 	echo "CNSP: WMH extraction finished."
 fi
 
+#if [ "$tidy" != "" ]; then
+#    # tidy up
+#    orig_dir=$(pwd)
+#
+#    rm rr*_FLAIR.nii*
+#    cd ${studyFolder}
+#    rm rr*_FLAIR.nii*
+#    #rm *.nii
+#    #rm -r originalImg
+#    rm -r subjects/QC
+#    rm -r subjects/coregQCfailure
+#    rm -r subjects/segQCfailure 
+#    for sub in $(ls subjects); do
+#        rm -r subjects/$sub/NativeTemplate 
+#        rm -r subjects/$sub/mri/kNN_intermediateOutput
+#        rm -r subjects/$sub/mri/orig
+#        rm -r subjects/$sub/mri/preprocessing
+#        rm subjects/$sub/mri/extractedWMH/temp/${sub}_seg?.nii
+#        rm subjects/$sub/mri/extractedWMH/${sub}_WMH_ProbMap_FWMH3mmSmooth.nii.gz
+#    done 
+#    cd $orig_dir
+#fi
 if [ "$tidy" != "" ]; then
     # tidy up
     orig_dir=$(pwd)
 
     rm rr*_FLAIR.nii*
     cd ${studyFolder}
-    rm rr*_FLAIR.nii*
-    #rm *.nii
-    #rm -r originalImg
-    rm -r subjects/QC
-    rm -r subjects/coregQCfailure
-    rm -r subjects/segQCfailure 
-    for sub in $(ls subjects); do
-        rm -r subjects/$sub/NativeTemplate 
-        rm -r subjects/$sub/mri/kNN_intermediateOutput
-        rm -r subjects/$sub/mri/orig
-        rm -r subjects/$sub/mri/preprocessing
-        rm subjects/$sub/mri/extractedWMH/temp/${sub}_seg?.nii
-        rm subjects/$sub/mri/extractedWMH/${sub}_WMH_ProbMap_FWMH3mmSmooth.nii.gz
+    cd subjects
+    rm -r */mri/orig
+    for i in $(ls); do
+        #tar -cvzf ${i}.tar.gz $i
+        tar cf - $i | pigz -9 -p 12 > ${i}.tar.gz
+        rm -r $i
     done 
     cd $orig_dir
 fi
